@@ -9,33 +9,45 @@ import PIL #save images
 import time
 
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('GITLAB')
-    print_hi(__name__)
 
-    windowHandle = pyautogui.getWindowsWithTitle("Hauppauge WinTV")[0]
-    print(windowHandle)
-    windowHandle.size = (1344,849)
+    #define Variables
+    prefferedWindowSize=(1301,849)
+    applicationName="Hauppauge WinTV"
+    
+    #debugging
+    foundLogo=r"screenshots\foundLogo.png"
+    searchedRegion=r"screenshots\searchLogo.png"
+    locatorPro7Logo='locators\pro7.png'
+
+    #logovariables
+    expectedMarginX=167
+    exptecedMarginY=133
+    squareSize=55
+
+    #
+    print(("Preffered Window Size: "+''.join(str(prefferedWindowSize))))
+
+    #get Window Handle and Resize
+    windowHandle = pyautogui.getWindowsWithTitle(applicationName)[0]
+    windowHandle.size = prefferedWindowSize
+
+    #print(windowHandle)
+
+
+    #get Relative Window Position
+
     handleVariables=str(windowHandle).split(",")
-
-
     topLeftX=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[0].split(" ")[1]))))
-    print(topLeftX)
+    print("left: "+str(topLeftX))
     topLeftY=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[1]))))
-    print(topLeftY)
-    bottomRightX=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[2]))))
-    print(bottomRightX)
-    bottomRightY=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[3]))))
-    print(bottomRightY)
+    print("top: "+str(topLeftY))
+    width=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[2]))))
+    print("width: "+str(width))
+    height=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[3]))))
+    print("height: "+str(height))
 
-    region=(topLeftX+900,topLeftY, bottomRightX, bottomRightY-700)
+    #regionWholeScreen=region=(topLeftX,topLeftY, bottomRightX, bottomRightY)
 
     #image for whole screen
     #im1=pyautogui.screenshot(region=(topLeftX,topLeftY, bottomRightX, bottomRightY))
@@ -44,31 +56,42 @@ if __name__ == '__main__':
     #im1=pyautogui.screenshot(region=(topLeftX+900,topLeftY, bottomRightX, bottomRightY-700))
 
     #im1.save(r"C:\Users\Daniel\Documents\GitHub\masterthesispython\screenshots\test.png")
-    searchLogoX=1223
-    searchLogoY=115
-    searchLogoX2=55
-    searchLogoY2=55
-
-    number=0
 
 
-    while number < 100:
+
+    searchLogoX1=topLeftX+width-expectedMarginX
+    searchLogoY1=topLeftY+exptecedMarginY
+    searchLogoX2=squareSize
+    searchLogoY2=squareSize
+
+
+    regionExpectedLogo=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
+
+    #print(regionExpectedLogo)
+
+    #regionExpectedLogo=(0,0,2000,2000)
+
+    #number=0
+
+
+    while 1:
         time.sleep(1)
-        im1=pyautogui.screenshot(region=(searchLogoX,searchLogoY, searchLogoX2, searchLogoY2))
-        im1.save(r"C:\Users\Daniel\Documents\GitHub\masterthesispython\screenshots\searchLogo.png")
+        im1=pyautogui.screenshot(region=regionExpectedLogo)
+        im1.save(searchedRegion)
 
         #location=pyautogui.locateOnScreen('locators\pro7.png',grayscale=True,confidence=0.7, region=(topLeftX,topLeftY, bottomRightX, bottomRightY))
-        location=pyautogui.locateOnScreen('locators\pro7.png',grayscale=True,confidence=0.3, region=(1223,115, 55, 55))
-        print(location)
-        print(location!="None")
-
-        print(location!=None)
+        #location=pyautogui.locateOnScreen('locators\pro7.png',grayscale=True,confidence=0.3, region=(1223,115, 55, 55))
+        location=pyautogui.locateOnScreen(locatorPro7Logo,grayscale=True,confidence=0.3, region=regionExpectedLogo)
+        #print(location)
 
         #foundBox
         if location!=None:
+            print("Programm!")
             im1=pyautogui.screenshot(region=(location[0],location[1], location[2], location[3]))
-            im1.save(r"C:\Users\Daniel\Documents\GitHub\masterthesispython\screenshots\foundLogo.png")
-        number += 1
+            im1.save(foundLogo)
+        else:
+            print("Werbung!")
+        #number += 1
 
 
 
