@@ -66,6 +66,7 @@ if __name__ == '__main__':
 
 
     regionExpectedLogo=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
+    print( regionExpectedLogo)
 
     #print(regionExpectedLogo)
 
@@ -89,8 +90,10 @@ if __name__ == '__main__':
             print("Programm!")
             im1=pyautogui.screenshot(region=(location[0],location[1], location[2], location[3]))
             im1.save(foundLogo)
+            #extract metadata and add to csv
         else:
             print("Werbung!")
+            #extract metadata and add to csv
         #number += 1
 
 

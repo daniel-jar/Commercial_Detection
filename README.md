@@ -4,3 +4,4 @@ py -m pip install opencv-python #for rectangle of Interest #not used only for im
 py -m pip install pyglet #for rectangle of Interest
 py -m pip install regex
 py -m pip install pip
+py -m pip install ffmpeg-python
