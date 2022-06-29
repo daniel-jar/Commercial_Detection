@@ -1,4 +1,32 @@
-ffmpeg -rtbufsize 1500M -f dshow -i audio="virtual-audio-capturer" -f gdigrab -framerate 30 -draw_mouse 1 -i title="Hauppauge WinTV [2 - arte HD]" -c:v hevc_nvenc -preset slow -rc vbr_2pass -2pass 1 -qmin 3 -cq 27 -y Huangbaohua.mp4
-ffmpeg -f gdigrab -framerate 30 -i title="Hauppauge WinTV [2 - arte HD]" -b:v 3M  germ.flv 
+ffmpeg -rtbufsize 1500M -f dshow -i audio="Stereomix (Realtek High Definition Audio)" -f gdigrab -framerate 30 -draw_mouse 1 -i title="Hauppauge WinTV [2 - arte HD]" -c:v hevc_nvenc -preset slow -rc vbr_2pass -2pass 1 -qmin 3 -cq 27 -y Test.mp4
+ffmpeg -f gdigrab -framerate 30  -i title="Hauppauge WinTV [1 - Das Erste HD]" -b:v 3M  germ.flv 
 
 ffmpeg -f gdigrab title="Hauppauge WinTV [2 - arte HD]" -framerate 30 -i default -preset ultrafast -crf 18 -pix_fmt yuv420p germ.flv
+ffmpeg -list_devices true -f dshow -i dummy
+
+ffmpeg -f gdigrab -framerate 30 -i desktop -c:v libx264 output.mkv -f dshow -i audio="Stereomix (Realtek High Definition Audio)" output.mkv
+
+ffmpeg -f dshow -i video="UScreenCapture" -f dshow -i audio="Stereomix (Realtek High Definition Audio)" output.mkv
+ffmpeg -f gdigrab title="Hauppauge WinTV [2 - arte HD]" -f dshow -i audio="Stereomix (Realtek High Definition Audio)" output.mkv
+
+
+
+ffmpeg -rtbufsize 1500M -f dshow -i audio="Stereomix (Realtek High Definition Audio)" -f -y -rtbufsize 100M -f gdigrab -t 00:00:30 -framerate 30 -probesize 10M -draw_mouse 1 -i desktop -c:v libx264 -r 30 -preset ultrafast -tune zerolatency -crf 25 -pix_fmt yuv420p ffmpeg_testing.mp4
+
+
+ffmpeg -f dshow -i audio="Stereomix (Realtek High Definition Audio)" -f gdigrab -framerate 30 -i title="Hauppauge WinTV [1 - Das Erste HD]" output.mp4
+
+
+ffmpeg -f dshow -i audio="Stereomix (Realtek High Definition Audio)" -f gdigrab -framerate 30 -i title="Hauppauge WinTV [1 - Das Erste HD]" -c:v libx264 -b:v 1500k -preset ultrafast -crf 22  output.ts
+
+
+ffmpeg -f dshow -thread_queue_size 1024 -i audio="Stereomix (Realtek High Definition Audio)" -f gdigrab -framerate 24  -probesize 42M -thread_queue_size 1024 -i title="Hauppauge WinTV [1 - Das Erste HD]" -c:v libx264 -b:v 1500k -preset ultrafast -crf 22  output3.ts
+
+
+
+
+ffmpeg -f dshow -thread_queue_size 1024 -i audio="Stereomix (Realtek High Definition Audio)" -f gdigrab -probesize 42M -thread_queue_size 1024 -i title="Hauppauge WinTV [1 - Das Erste HD]" -c:v libx264 -b:v 1500k -preset ultrafast -crf 22  output3.ts
+
+
+
+ffmpeg -rtbufsize 100M -f dshow -thread_queue_size 1024 -i audio="Stereomix (Realtek High Definition Audio)" -rtbufsize 100M -f gdigrab -framerate 30 -probesize 42M -thread_queue_size 1024 -i title="Hauppauge WinTV [1 - Das Erste HD]" -c:v libx264 -b:v 1500k -preset ultrafast -crf 22 output3.ts
