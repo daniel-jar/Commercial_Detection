@@ -12,7 +12,6 @@ RATE = int(p.get_default_input_device_info()['defaultSampleRate'])
 DEVICE = p.get_default_input_device_info()['index']
 rms = 0
 print(p.get_default_input_device_info())
-print("device printed")
 
 def callback(in_data, frame_count, time_info, status):
     global rms
