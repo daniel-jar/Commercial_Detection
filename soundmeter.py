@@ -4,6 +4,9 @@ import time
 from math import log10
 import audioop  
 
+import numpy
+
+
 
 
 p = pyaudio.PyAudio()
@@ -11,14 +14,19 @@ WIDTH = 2
 RATE = int(p.get_default_input_device_info()['defaultSampleRate'])
 DEVICE = p.get_default_input_device_info()['index']
 rms = 0
+counter=0
+decoded = []
+print("=== Soundmeter Started ===")
 print(p.get_default_input_device_info())
 
 def callback(in_data, frame_count, time_info, status):
     global rms
+    global decoded
+    #decoded = numpy.fromstring(in_data, 'Float32');
+    decoded = numpy.fromstring(in_data, 'float');
     rms = audioop.rms(in_data, WIDTH) / 32767
     #print(rms)
     return in_data, pyaudio.paContinue
-
 
 stream = p.open(format=p.get_format_from_width(WIDTH),
                 input_device_index=DEVICE,
@@ -29,15 +37,20 @@ stream = p.open(format=p.get_format_from_width(WIDTH),
                 stream_callback=callback)
 
 stream.start_stream()
-
+ 
 while stream.is_active(): 
+    
+    zero_crosses = (numpy.where(numpy.sign(decoded[:-1]) != numpy.sign(decoded[1:]))[0] + 1).size
     if rms==0:
-        print(f"RMS: {0} DB: {0}") 
+        print(f"RMS: {0} DB: {0}  ZCR: {zero_crosses} Datapoint: {counter}") 
     else:
         db = 20 * log10(rms)
-        print(f"RMS: {rms} DB: {db}") 
-        # refresh every 0.3 seconds 
-        time.sleep(0.3)
+        print(f"RMS: {rms} DB: {db} ZCR: {zero_crosses} Datapoint: {counter}") 
+
+
+    #time.sleep(1)
+    counter+=1
+        
 
 stream.stop_stream()
 stream.close()

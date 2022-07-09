@@ -1,12 +1,12 @@
 py -m pip install pyautogui	#for locator Tv Logo
 py -m pip install pygetwindow 	#for window Size
-py -m pip install opencv-python #for rectangle of Interest #not used only for img
-py -m pip install pyglet #for rectangle of Interest
+py -m pip install opencv-python #for rectangle of Interest #not used only for img notused
+py -m pip install pyglet #for rectangle of Interest notused
 py -m pip install regex
 py -m pip install pip
-py -m pip install ffmpeg-python
+py -m pip install ffmpeg-python notused
 py -m pip install PyAudio (as admin)
-py -m pip install soundmeter
+py -m pip install soundmeter notused
 
 
 
