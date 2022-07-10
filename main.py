@@ -7,13 +7,14 @@ import pygetwindow
 import re #get numbers from string
 import PIL #save images
 import time
-
+pyautogui.PAUSE = 0.01
 
 if __name__ == '__main__':
 
     #define Variables
     prefferedWindowSize=(1301,849)
     applicationName="Hauppauge WinTV"
+    counter = 0
     
     #debugging
     foundLogo=r"screenshots\foundLogo.png"
@@ -76,9 +77,10 @@ if __name__ == '__main__':
 
 
     while 1:
-        time.sleep(1)
-        im1=pyautogui.screenshot(region=regionExpectedLogo)
-        im1.save(searchedRegion)
+        #time.sleep(1)
+        counter+=1
+        #im1=pyautogui.screenshot(region=regionExpectedLogo)
+        #im1.save(searchedRegion)
 
         #location=pyautogui.locateOnScreen('locators\pro7.png',grayscale=True,confidence=0.7, region=(topLeftX,topLeftY, bottomRightX, bottomRightY))
         #location=pyautogui.locateOnScreen('locators\pro7.png',grayscale=True,confidence=0.3, region=(1223,115, 55, 55))
@@ -87,12 +89,12 @@ if __name__ == '__main__':
 
         #foundBox
         if location!=None:
-            print("Programm!")
-            im1=pyautogui.screenshot(region=(location[0],location[1], location[2], location[3]))
-            im1.save(foundLogo)
+            print(f"Programm! - Datapoint: {counter}")
+            #im1=pyautogui.screenshot(region=(location[0],location[1], location[2], location[3]))
+            #im1.save(foundLogo)
             #extract metadata and add to csv
         else:
-            print("Werbung!")
+            print(f"Werbung! - Datapoint: {counter}")
             #extract metadata and add to csv
         #number += 1
 
