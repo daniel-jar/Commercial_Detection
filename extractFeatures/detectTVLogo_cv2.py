@@ -23,10 +23,8 @@ FOUND_LOGO_LOCATION=r"screenshots\foundLogo.png"
 SEARCHED_LOGO_LOCATION=r"screenshots\searchLogo.png"
 
 #searchingForLogo
-#Used for pyautogui
-PICTURE_TV_LOGO ='locators\pro7.png'
-#used for cv2 pil
 PICTURE_TV_LOGO = cv.imread("locators\pro7.png",cv.IMREAD_GRAYSCALE)
+PICTURE_TV_LOGO_SMALL = cv.imread("locators\pro7_small.png",cv.IMREAD_GRAYSCALE)
 
 cv.imwrite(FOUND_LOGO_LOCATION,PICTURE_TV_LOGO)
 
@@ -83,14 +81,7 @@ while 1:
     img_cv = cv.cvtColor(np.array(im1), cv.COLOR_RGB2GRAY)
     #im1=pyautogui.screenshot(region=regionExpectedLogo)
     #im1.save(SEARCHED_LOGO_LOCATION)
-
-    #res = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, method)
-
-
-    methods = [cv.TM_CCOEFF, cv.TM_CCOEFF_NORMED, cv.TM_CCORR,
-               cv.TM_CCORR_NORMED, cv.TM_SQDIFF, cv.TM_SQDIFF_NORMED]
-
-               
+            
     #resTM_CCOEFF = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_CCOEFF) #1000000 quite represamtative
     resTM_CCOEFF_NORMED = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_CCOEFF_NORMED) #~0.3 quite represamtative
     #resTM_CCORR  = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_CCORR) #not represantative usable
@@ -98,12 +89,17 @@ while 1:
     #resTM_SQDIFF = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_SQDIFF) #not represantative usable
     resTM_SQDIFF_NORMED = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_SQDIFF_NORMED) #
 
+    resTM_CCOEFF_NORMED_SMALL = cv.matchTemplate(img_cv, PICTURE_TV_LOGO_SMALL, cv.TM_CCOEFF_NORMED) #~0.3 quite represamtative
+    resTM_SQDIFF_NORMED_SMALL = cv.matchTemplate(img_cv, PICTURE_TV_LOGO_SMALL, cv.TM_SQDIFF_NORMED) #
 
+    print(resTM_CCOEFF_NORMED_SMALL)
+    print(resTM_SQDIFF_NORMED_SMALL)
 
-    
+    logoIndicationBooleanSQDIFF = resTM_SQDIFF_NORMED<=0.4 or resTM_SQDIFF_NORMED_SMALL.any() <=0.4
+    logoIndicationBooleanCCOEFF = resTM_CCOEFF_NORMED>=0.3 or resTM_SQDIFF_NORMED_SMALL.any() >=0.3
 
-    print(str(resTM_SQDIFF_NORMED)+" "+str(resTM_SQDIFF_NORMED<=0.4))
-    print(str(resTM_CCOEFF_NORMED)+" "+str(resTM_CCOEFF_NORMED>=0.3))
+    print(str(resTM_SQDIFF_NORMED)+" "+str(logoIndicationBooleanSQDIFF))
+    print(str(resTM_CCOEFF_NORMED)+" "+str(logoIndicationBooleanCCOEFF))
     # cv.TM_CCOEFF_NORMED actually seems to be the most relevant method
     # for method in methods:
     #     print(method)
@@ -117,17 +113,17 @@ while 1:
     #print(location)
 
     #foundBox
-    if resTM_SQDIFF_NORMED <= 0.4 and resTM_CCOEFF_NORMED>=0.3 and LOGO_GEFUNDEN==0 :
+    if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0 :
         #TV Logo Found => We expect a normal TV Show
         LOGO_GEFUNDEN = 1
         os.system("start sounds/programm.mp3")
         #im1=pyautogui.screenshot(region=(location[0],location[1], location[2], location[3]))
         #im1.save(FOUND_LOGO_LOCATION)
-    elif (not resTM_SQDIFF_NORMED <= 0.4 and not resTM_CCOEFF_NORMED>=0.3) and LOGO_GEFUNDEN==1:
+    elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
         #TV Logo not Found => We expect Commercial
         os.system("start sounds/werbung.mp3")
         LOGO_GEFUNDEN = 0
-    elif not (not resTM_SQDIFF_NORMED <= 0.4 and not resTM_CCOEFF_NORMED>=0.3) or not (resTM_SQDIFF_NORMED <= 0.4 and resTM_CCOEFF_NORMED>=0.3):
+    elif logoIndicationBooleanSQDIFF != logoIndicationBooleanCCOEFF:
         os.system("start sounds/algo.mp3")
 
     if LOGO_GEFUNDEN:
