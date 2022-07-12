@@ -1,3 +1,4 @@
+#extract MFCC, RMS, ZCR
 #https://stackoverflow.com/questions/70502339/how-would-i-find-the-current-decibel-level-and-set-it-as-a-variable/70514219#70514219
 import pyaudio
 import time
@@ -51,8 +52,6 @@ while stream.is_active():
     else:
         db = 20 * log10(rms)
         print(f"RMS: {rms} DB: {db} ZCR: {zero_crosses} Datapoint: {counter}") 
-
-
     time.sleep(1)
     counter+=1
         

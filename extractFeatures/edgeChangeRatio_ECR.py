@@ -45,6 +45,6 @@ if __name__ == "__main__":
         if frame is None:
             break
         if prev_frame is not None:
-            print ECR(frame, prev_frame, width, height)
+            print(ECR(frame, prev_frame, width, height))
         prev_frame = frame
     video.release()
