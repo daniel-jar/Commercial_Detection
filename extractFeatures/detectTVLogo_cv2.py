@@ -15,6 +15,10 @@ import os
 PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION=(1301,849)
 TV_APPLICATION_NAME = "Hauppauge WinTV"
 COUNT_OF_ITERATIONS = 0
+CONSECUTIVE_FRAMES_FOR_SWITCHING = 25
+CONSECUTIVE_COUNTER = 0
+CONSECUTIVE_FRAME_COOLDOWN = 0
+CONSECUTIVE_COOLDOWN_COUNTER = 0
 
 #Debugging to check if the correct region is searched for
 FOUND_LOGO_LOCATION=r"screenshots\foundLogo.png"
@@ -24,18 +28,11 @@ SEARCHED_LOGO_LOCATION=r"screenshots\searchLogo.png"
 PICTURE_TV_LOGO = cv.imread("locators\pro7.png",cv.IMREAD_GRAYSCALE)
 PICTURE_TV_LOGO_SMALL = cv.imread("locators\pro7_small.png",cv.IMREAD_GRAYSCALE)
 
-#logovariables #old margins
-# EXPECTED_MARGIN_X = 167
-# EXPECTED_MARGIN_Y = 133
-# SIZE_OF_EXPECTED_LOGO = 55
-
-# width: 1301
-# height: 849
-# (1396, 158, 55, 55)
 #EDGES WITH Border
 EXPECTED_MARGIN_X = 160
 EXPECTED_MARGIN_Y = 70
-SIZE_OF_EXPECTED_LOGO = 48
+SIZE_OF_EXPECTED_LOGO_X = 48
+SIZE_OF_EXPECTED_LOGO_Y = 144
 
 #BORDEREDGES for Picture without Appplication Borders
 LEFT_BORDER_MARGIN = 9
@@ -78,78 +75,51 @@ print("EXPECTED REGION OF TV APP: " + str(regionTVApplication))
 print("\ncalculating offset for region of tv logo")
 searchLogoX1 = width-EXPECTED_MARGIN_X-LEFT_BORDER_MARGIN
 searchLogoY1 = EXPECTED_MARGIN_Y-TOP_BORDER_MARGIN
-searchLogoX2 = SIZE_OF_EXPECTED_LOGO+searchLogoX1
-searchLogoY2 = SIZE_OF_EXPECTED_LOGO+searchLogoY1
+searchLogoX2 = SIZE_OF_EXPECTED_LOGO_X+searchLogoX1
+searchLogoY2 = SIZE_OF_EXPECTED_LOGO_Y+searchLogoY1
 
 #for PIL ImageGrab
 regionExpectedLogo=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
 print("EXPECTED REGION OF LOGO: " + str(regionExpectedLogo))
 
 
-
-
-
 while 1:
-    time.sleep(1)
-    print("NEW DATAPOINT")
+    #time.sleep(1)
     COUNT_OF_ITERATIONS += 1
+    
     imageApplicationVideoStream = ImageGrab.grab(bbox=regionTVApplication)
-    imageExpectedLogo = imageApplicationVideoStream.crop((regionExpectedLogo))
-    imageExpectedLogoSmall = imageExpectedLogo.crop((2,2,42,42))
+    if CONSECUTIVE_COOLDOWN_COUNTER==0:
+        imageExpectedLogo = imageApplicationVideoStream.crop((regionExpectedLogo))
+        imageExpectedLogoAsNumpy = cv.cvtColor(np.array(imageExpectedLogo), cv.COLOR_RGB2GRAY)
 
-    imageExpectedLogoSmall.save(SEARCHED_LOGO_LOCATION)
+        resTM_SQDIFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_SQDIFF_NORMED) #<0.4 quite represantive
+        resTM_CCOEFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_CCOEFF_NORMED) #>0.3 quite represantative
 
-    imageExpectedLogoAsNumpy = cv.cvtColor(np.array(imageExpectedLogo), cv.COLOR_RGB2GRAY)
-    imageExpectedLogoAsNumpySmall = cv.cvtColor(np.array(imageExpectedLogoSmall), cv.COLOR_RGB2GRAY)
-    #im1=pyautogui.screenshot(region=regionExpectedLogo)
-    #im1.save(SEARCHED_LOGO_LOCATION)
-            
-    resTM_SQDIFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_SQDIFF_NORMED) #<0.4 quite represantive
-    resTM_CCOEFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_CCOEFF_NORMED) #>0.3 quite represantative
-    #resTM_CCOEFF = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_CCOEFF) #1000000 quite represamtative
-    #resTM_CCORR  = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_CCORR) #not represantative usable
-    #resTM_CCORR_NORMED = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_CCORR_NORMED) #not represantative usable 
-    #resTM_SQDIFF = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, cv.TM_SQDIFF) #not represantative usable
+        logoIndicationBooleanSQDIFF = (resTM_SQDIFF_NORMED<=0.4).any() or (resTM_CCOEFF_NORMED>=0.9).any()
+        logoIndicationBooleanCCOEFF = (resTM_CCOEFF_NORMED>=0.3).any() or (resTM_SQDIFF_NORMED<=0.05).any()
 
+        print(str(resTM_SQDIFF_NORMED.max())+" "+str(logoIndicationBooleanSQDIFF   ))
+        print(str(resTM_CCOEFF_NORMED.max())+" "+str(logoIndicationBooleanCCOEFF))
 
-    print(resTM_SQDIFF_NORMED)
-    print(resTM_SQDIFF_NORMED_SMALL)
-
-    print(resTM_CCOEFF_NORMED)
-    print(resTM_CCOEFF_NORMED_SMALL)
-  
-
-    logoIndicationBooleanSQDIFF = resTM_SQDIFF_NORMED<=0.4 or resTM_SQDIFF_NORMED_SMALL <=0.4
-    logoIndicationBooleanCCOEFF = resTM_CCOEFF_NORMED>=0.3 or resTM_SQDIFF_NORMED_SMALL >=0.3
-
-    print(str(resTM_SQDIFF_NORMED)+" "+str(logoIndicationBooleanSQDIFF))
-    print(str(resTM_CCOEFF_NORMED)+" "+str(logoIndicationBooleanCCOEFF))
-    # cv.TM_CCOEFF_NORMED actually seems to be the most relevant method
-    # for method in methods:
-    #     print(method)
-    #     res = cv.matchTemplate(img_cv, PICTURE_TV_LOGO, method)
-    #     print(res)
-
-    # print(res)
-    #location=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=0.7, region=(topLeftX,topLeftY, bottomRightX, bottomRightY))
-    #location=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=0.3, region=(1223,115, 55, 55))
-    #location=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=0.3, region=regionExpectedLogo)
-    #print(location)
-
-    #foundBox
-    if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0 :
-        #TV Logo Found => We expect a normal TV Show
-        LOGO_GEFUNDEN = 1
-        #os.system("start sounds/programm.mp3")
-        #im1=pyautogui.screenshot(region=(location[0],location[1], location[2], location[3]))
-        #im1.save(FOUND_LOGO_LOCATION)
-    elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
-        #TV Logo not Found => We expect Commercial
-        #os.system("start sounds/werbung.mp3")
-        LOGO_GEFUNDEN = 0
-    elif logoIndicationBooleanSQDIFF != logoIndicationBooleanCCOEFF:
-        print("Nicht Sicher")
-        #os.system("start sounds/algo.mp3")
+   
+        if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
+            CONSECUTIVE_COUNTER+=1
+            if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
+                LOGO_GEFUNDEN = 1
+                CONSECUTIVE_COUNTER = 0
+                CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
+                os.system("start sounds/programm.mp3")
+        elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
+            CONSECUTIVE_COUNTER+=1
+            if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
+                LOGO_GEFUNDEN = 0
+                CONSECUTIVE_COUNTER = 0
+                CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
+                os.system("start sounds/werbung.mp3")
+        else:
+            CONSECUTIVE_COUNTER=0
+    else:
+        CONSECUTIVE_COOLDOWN_COUNTER-=1
 
     if LOGO_GEFUNDEN:
         print(f"Programm! - Datapoint: {COUNT_OF_ITERATIONS}")
