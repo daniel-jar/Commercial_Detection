@@ -23,7 +23,7 @@ os.system("taskkill /im "+PROCESSNAME)
 chrome_options = Options()
 chrome_options.add_argument("--window-size=1920,1080");
 chrome_options.add_argument("--no-sandbox");
-#chrome_options.add_argument("--headless");
+chrome_options.add_argument("--headless");
 chrome_options.add_argument("--disable-gpu");
 chrome_options.add_argument("--disable-crash-reporter");
 chrome_options.add_argument("--disable-extensions");
@@ -42,10 +42,11 @@ chrome_options.add_experimental_option("prefs", {
 browser = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
 url = "https://euw.op.gg/summoners/euw/darkmoon008/ingame"
 #url = "https://euw.op.gg/summoners/euw/Hashtag%20Swag/ingame"
-url = "https://euw.op.gg/summoners/euw/SeRiN1/ingame"
+#url = "https://euw.op.gg/summoners/euw/catshouldntsmoke/ingame"
 #url = "https://euw.op.gg/summoners/euw/cr4yzed/ingame"
 bool_ingame = FALSE
 while TRUE:
+    browser = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
     print("Searching For Game")
     if bool_ingame:
         time.sleep(600)
