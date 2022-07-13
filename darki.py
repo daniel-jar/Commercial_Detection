@@ -43,11 +43,8 @@ chrome_options.add_experimental_option("prefs", {
 browser = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
 url = "https://euw.op.gg/summoners/euw/darkmoon008/ingame"
 #url = "https://euw.op.gg/summoners/euw/Hashtag%20Swag/ingame"
-<<<<<<< Updated upstream
 #url = "https://euw.op.gg/summoners/euw/catshouldntsmoke/ingame"
-=======
 #url = "https://euw.op.gg/summoners/euw/odoamne/ingame"
->>>>>>> Stashed changes
 #url = "https://euw.op.gg/summoners/euw/cr4yzed/ingame"
 bool_ingame = FALSE
 while TRUE:
