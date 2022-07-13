@@ -203,7 +203,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
                     CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
                     imageExpectedLogo.save("screenshots/foundWerbung"+str(COUNT_OF_ITERATIONS)+".png")
                     #os.system("start sounds/werbung.mp3")
-                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),cd.day(),cd.time()"WERBUNG"]
+                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),cd.day(),cd.time(),"WERBUNG"]
                     writer_object.writerow(list_data) 
                     end = time.time()
                     print("time elapsed: "+str(end - start))
