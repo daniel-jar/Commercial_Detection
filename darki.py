@@ -42,10 +42,11 @@ chrome_options.add_experimental_option("prefs", {
 browser = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
 url = "https://euw.op.gg/summoners/euw/darkmoon008/ingame"
 #url = "https://euw.op.gg/summoners/euw/Hashtag%20Swag/ingame"
-url = "https://euw.op.gg/summoners/euw/RAFAL0L/ingame"
+url = "https://euw.op.gg/summoners/euw/SeRiN1/ingame"
 #url = "https://euw.op.gg/summoners/euw/cr4yzed/ingame"
 bool_ingame = FALSE
 while TRUE:
+    print("Searching For Game")
     if bool_ingame:
         time.sleep(600)
     browser.get(url)
@@ -72,6 +73,8 @@ while TRUE:
             time.sleep(10)
             os.startfile(latest_file)
             bool_ingame=TRUE
+            time.sleep(10)
+            browser.close()
     else:
         bool_ingame=False
         print(curTime)
