@@ -12,6 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
     #     # if "ist nicht in einem aktiven Spiel" in html:
 from datetime import datetime
 DOWNLOADPATH = "C:/Users/daniel.jarocha/Downloads"
+DOWNLOADPATH = "C:/Users/daniel/Downloads"
 import glob
 import os
 
@@ -42,7 +43,11 @@ chrome_options.add_experimental_option("prefs", {
 browser = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
 url = "https://euw.op.gg/summoners/euw/darkmoon008/ingame"
 #url = "https://euw.op.gg/summoners/euw/Hashtag%20Swag/ingame"
+<<<<<<< Updated upstream
 #url = "https://euw.op.gg/summoners/euw/catshouldntsmoke/ingame"
+=======
+#url = "https://euw.op.gg/summoners/euw/odoamne/ingame"
+>>>>>>> Stashed changes
 #url = "https://euw.op.gg/summoners/euw/cr4yzed/ingame"
 bool_ingame = FALSE
 while TRUE:
@@ -72,7 +77,18 @@ while TRUE:
             latest_file = max(list_of_files, key=os.path.getctime)
             print(latest_file)
             time.sleep(10)
-            os.startfile(latest_file)
+            fin = open(latest_file, "rt")
+            #output file to write the result to
+            fout = open("start.bat", "wt")
+            #for each line in the input file
+            for line in fin:
+                #read replace the string and write to output file
+                fout.write(line.replace('C:\Riot Games\League of Legends', 'M:\RIOT\Riot Games\League of Legends'))
+            #close input and output files
+            fin.close()
+            fout.close()
+            time.sleep(10)
+            os.startfile("start.bat")
             bool_ingame=TRUE
             time.sleep(10)
             browser.close()
