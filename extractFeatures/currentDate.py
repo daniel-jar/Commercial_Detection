@@ -1,6 +1,12 @@
 from datetime import datetime
-dateTimeObj = datetime.now()
-time = dateTimeObj.strftime("%H:%M:%S.%f")
-date = dateTimeObj.strftime("%d.%m.%Y")
-print(date)
-print(time)
+
+
+
+def time():
+    dateTimeObj = datetime.now()
+    time = dateTimeObj.strftime("%H:%M")
+    return time
+
+def day():
+    dateTimeObj = datetime.now()
+    return dateTimeObj.weekday()

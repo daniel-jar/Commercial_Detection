@@ -37,15 +37,9 @@ stream = p.open(format=p.get_format_from_width(WIDTH),
                 stream_callback=callback)
 
 stream.start_stream()
- 
 while stream.is_active(): 
-
-
     zero_crosses = (numpy.where(numpy.sign(decoded[:-1]) != numpy.sign(decoded[1:]))[0] + 1).size
     mfcc = librosa.feature.mfcc(y=numpy.array(decoded), sr=RATE)
-    
-    print(len(decoded))
-    print(len(mfcc))
     
     if rms==0:
         print(f"RMS: {0} DB: {0}  ZCR: {zero_crosses} Datapoint: {counter}") 
@@ -54,9 +48,6 @@ while stream.is_active():
         print(f"RMS: {rms} DB: {db} ZCR: {zero_crosses} Datapoint: {counter}") 
     time.sleep(1)
     counter+=1
-        
-
 stream.stop_stream()
 stream.close()
-
 p.terminate()
