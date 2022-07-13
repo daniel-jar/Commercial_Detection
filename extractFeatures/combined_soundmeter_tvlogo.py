@@ -214,7 +214,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
         else:
             CONSECUTIVE_COOLDOWN_COUNTER-=1
 
-        if LOGO_GEFUNDEN:
+        #if LOGO_GEFUNDEN:
             #print(f"Programm! - Datapoint: {COUNT_OF_ITERATIONS}")
         #else:
             #print(f"Werbung! - Datapoint: {COUNT_OF_ITERATIONS}")
