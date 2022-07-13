@@ -10,7 +10,3 @@ def time():
 def day():
     dateTimeObj = datetime.now()
     return dateTimeObj.weekday()
-
-
-print(time())
-print(day())
