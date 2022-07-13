@@ -1,5 +1,6 @@
 #visuelle merkmale
 from pickle import NONE
+from cv2 import SIFT
 import pyautogui
 import pygetwindow
 import re #get numbers from string
@@ -25,7 +26,6 @@ import pyaudio
 import time
 from math import log10
 import audioop  
-import numpy
 import librosa
 
 
@@ -37,6 +37,7 @@ WIDTH = 2
 RATE = int(p.get_default_input_device_info()['defaultSampleRate'])
 DEVICE = p.get_default_input_device_info()['index']
 rms = 0
+db = 0
 counter = 0
 decoded = []
 mfcc = []
@@ -133,7 +134,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
         global rms
         global decoded
         #decoded = numpy.frombuffer(in_data, dtype=numpy.float)
-        decoded = numpy.frombuffer(in_data, dtype=numpy.short).astype(float)
+        decoded = np.frombuffer(in_data, dtype=np.short).astype(float)
         rms = audioop.rms(in_data, WIDTH) / 32767
         return in_data, pyaudio.paContinue
 
@@ -151,8 +152,8 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
         #time.sleep(1)
         COUNT_OF_ITERATIONS += 1
         #audio merkmale
-        zero_crosses = (numpy.where(numpy.sign(decoded[:-1]) != numpy.sign(decoded[1:]))[0] + 1).size
-        mfcc = (librosa.feature.mfcc(y=numpy.array(decoded), sr=RATE)).std()
+        zero_crosses = (np.where(np.sign(decoded[:-1]) != np.sign(decoded[1:]))[0] + 1).size
+        mfcc = (librosa.feature.mfcc(y=np.array(decoded), sr=RATE)).std()
         
         if rms!=0:
             db = 20 * log10(rms)
@@ -160,21 +161,25 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
         #print(f"RMS: {rms} DB: {db} ZCR: {zero_crosses} MFCC: {mfcc} Datapoint: {counter}") 
             
         imageApplicationVideoStream = ImageGrab.grab(bbox=regionTVApplication)
-        if PREV_FRAME != NONE:
-            MVL_VALUES = mvl.lucas_kanade_method_mvl(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),cv,np)
-            ECR_RATIO = ECR.ECR(np.array(imageApplicationVideoStream), np.array(PREV_FRAME), edgeTVAPPwidth, edgeTVAPPheight, crop=False, dilate_rate = 5)
-            FARBWECHSEL_RATIO = farbchange.deltaE(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),cv,np)
-            SIFT_RATIO = SR.SIFT_RATIO(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),np,cv)
+        currentFrame = np.array(imageApplicationVideoStream)
+        if PREV_FRAME != NONE and (PREV_FRAME != currentFrame).all() and (PREV_FRAME.max()!=0 and currentFrame.max()!=0):
+            MVL_VALUES = mvl.lucas_kanade_method_mvl(currentFrame,PREV_FRAME,cv,np)
+            ECR_RATIO = ECR.ECR(currentFrame,PREV_FRAME, edgeTVAPPwidth, edgeTVAPPheight, crop=False, dilate_rate = 5)
+            FARBWECHSEL_RATIO = farbchange.deltaE(currentFrame,PREV_FRAME,cv,np)
+            SIFT_RATIO = SR.SIFT_RATIO(currentFrame,PREV_FRAME,np,cv)
             #print("ecr ratio: "+str(ECR_RATIO))
             #print("mvl sum: "+str(MVL_VALUES[0]))
             #print("absolute: "+str(MVL_VALUES[1]))
             #print(FARBWECHSEL_RATIO)
             #print(SIFT_RATIO)
-
         else:
-            print("No Previous Frame Detected")
+            #print("No Previous Frame Detected")
+            MVL_VALUES=[0,0]
+            ECR_RATIO=0
+            FARBWECHSEL_RATIO=0
+            SIFT_RATIO=1
 
-        PREV_FRAME = imageApplicationVideoStream
+        PREV_FRAME = np.array(imageApplicationVideoStream)
         if CONSECUTIVE_COOLDOWN_COUNTER==0:
             imageExpectedLogo = imageApplicationVideoStream.crop((regionExpectedLogo))
             imageExpectedLogoAsNumpy = cv.cvtColor(np.array(imageExpectedLogo), cv.COLOR_RGB2GRAY)
