@@ -1,3 +1,4 @@
+#visuelle merkmale
 from pickle import NONE
 import pyautogui
 import pygetwindow
@@ -13,6 +14,30 @@ from csv import writer
 import winsound
 import os
 from os.path import exists
+
+import currentDate as cd
+
+#extract MFCC, RMS, ZCR
+#https://stackoverflow.com/questions/70502339/how-would-i-find-the-current-decibel-level-and-set-it-as-a-variable/70514219#70514219
+import pyaudio
+import time
+from math import log10
+import audioop  
+import numpy
+import librosa
+
+
+start = time.time()
+
+#audio merkmale
+p = pyaudio.PyAudio()
+WIDTH = 2
+RATE = int(p.get_default_input_device_info()['defaultSampleRate'])
+DEVICE = p.get_default_input_device_info()['index']
+rms = 0
+counter = 0
+decoded = []
+mfcc = []
 
 #define Variables
 PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION=(1301,849)
@@ -55,7 +80,6 @@ MVL_VALUES = []
 windowHandle = pyautogui.getWindowsWithTitle(TV_APPLICATION_NAME)[0]
 windowHandle.size = PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION
 
-
 #Get Relative Window Position
 handleVariables=str(windowHandle).split(",")
 topLeftX=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[0].split(" ")[1]))))
@@ -95,19 +119,48 @@ file_exists = exists("logoDetection.csv")
 with open('logoDetection.csv', 'a', newline='') as f_object: 
     writer_object = writer(f_object)
     if not file_exists:
-        list_data=["COUNT_OF_ITERATIONS","logoIndicationBooleanSQDIFF","resTM_SQDIFF_NORMED.max()","logoIndicationBooleanCCOEFF","resTM_CCOEFF_NORMED.max()","ECR_RATIO","MVL_VALUES[0]","MVL_VALUES[1]","LABEL"]
+        list_data=["COUNT_OF_ITERATIONS","logoIndicationBooleanSQDIFF","resTM_SQDIFF_NORMED.max()","logoIndicationBooleanCCOEFF","resTM_CCOEFF_NORMED.max()","ECR_RATIO","MVL_VALUES[0]","MVL_VALUES[1]","RMS","DB","ZCR","MFCC","Tag","Zeit","LABEL"]
         writer_object.writerow(list_data) 
-    while 1:
-        time.sleep(1)
+
+    print("=== Soundmeter Started ===")
+    print(p.get_default_input_device_info())
+
+    def callback(in_data, frame_count, time_info, status):
+        global rms
+        global decoded
+        #decoded = numpy.frombuffer(in_data, dtype=numpy.float)
+        decoded = numpy.frombuffer(in_data, dtype=numpy.short).astype(float)
+        rms = audioop.rms(in_data, WIDTH) / 32767
+        return in_data, pyaudio.paContinue
+
+    stream = p.open(format=p.get_format_from_width(WIDTH),
+                    input_device_index=DEVICE,
+                    channels=1,
+                    rate=RATE,
+                    input=True,
+                    output=False,
+                    stream_callback=callback)
+
+    stream.start_stream()
+
+    while stream.is_active(): 
         COUNT_OF_ITERATIONS += 1
+        #audio merkmale
+        zero_crosses = (numpy.where(numpy.sign(decoded[:-1]) != numpy.sign(decoded[1:]))[0] + 1).size
+        mfcc = (librosa.feature.mfcc(y=numpy.array(decoded), sr=RATE)).std()
+        
+        if rms!=0:
+            db = 20 * log10(rms)
+
+        #print(f"RMS: {rms} DB: {db} ZCR: {zero_crosses} MFCC: {mfcc} Datapoint: {counter}") 
             
         imageApplicationVideoStream = ImageGrab.grab(bbox=regionTVApplication)
         if PREV_FRAME != NONE:
             MVL_VALUES = mvl.lucas_kanade_method_mvl(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),cv,np)
             ECR_RATIO = ECR.ECR(np.array(imageApplicationVideoStream), np.array(PREV_FRAME), edgeTVAPPwidth, edgeTVAPPheight, crop=False, dilate_rate = 5)
-            print("ecr ratio: "+str(ECR_RATIO))
-            print("mvl sum: "+str(MVL_VALUES[0]))
-            print("absolute: "+str(MVL_VALUES[1]))
+            #print("ecr ratio: "+str(ECR_RATIO))
+            #print("mvl sum: "+str(MVL_VALUES[0]))
+            #print("absolute: "+str(MVL_VALUES[1]))
 
         else:
             print("No Previous Frame Detected")
@@ -123,8 +176,8 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
             logoIndicationBooleanSQDIFF = (resTM_SQDIFF_NORMED<=0.4).any() or (resTM_CCOEFF_NORMED>=0.9).any()
             logoIndicationBooleanCCOEFF = (resTM_CCOEFF_NORMED>=0.3).any() or (resTM_SQDIFF_NORMED<=0.05).any()
 
-            print(str(resTM_SQDIFF_NORMED.max())+" "+str(logoIndicationBooleanSQDIFF   ))
-            print(str(resTM_CCOEFF_NORMED.max())+" "+str(logoIndicationBooleanCCOEFF))
+            #print(str(resTM_SQDIFF_NORMED.max())+" "+str(logoIndicationBooleanSQDIFF   ))
+            #print(str(resTM_CCOEFF_NORMED.max())+" "+str(logoIndicationBooleanCCOEFF))
 
     
             if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
@@ -135,8 +188,12 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
                     CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
                     #os.system("start sounds/programm.mp3")
                     imageExpectedLogo.save("screenshots/foundLogo"+str(COUNT_OF_ITERATIONS)+".png")
-                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],"PROGRAMM"]
-                    writer_object.writerow(list_data)  
+                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),cd.day(),cd.time(),"PROGRAMM"]
+                    writer_object.writerow(list_data) 
+                    end = time.time()
+                    print("time elapsed: "+str(end - start))
+                    print(COUNT_OF_ITERATIONS)
+                    print("Programm gefunden")
         
             elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
                 CONSECUTIVE_COUNTER+=1
@@ -146,17 +203,25 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
                     CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
                     imageExpectedLogo.save("screenshots/foundWerbung"+str(COUNT_OF_ITERATIONS)+".png")
                     #os.system("start sounds/werbung.mp3")
-                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],"WERBUNG"]
-                    writer_object.writerow(list_data)  
+                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),cd.day(),cd.time()"WERBUNG"]
+                    writer_object.writerow(list_data) 
+                    end = time.time()
+                    print("time elapsed: "+str(end - start))
+                    print(COUNT_OF_ITERATIONS)
+                    print("Werbung gefunden")
             else:
                 CONSECUTIVE_COUNTER=0
         else:
             CONSECUTIVE_COOLDOWN_COUNTER-=1
 
         if LOGO_GEFUNDEN:
-            print(f"Programm! - Datapoint: {COUNT_OF_ITERATIONS}")
-        else:
-            print(f"Werbung! - Datapoint: {COUNT_OF_ITERATIONS}")
+            #print(f"Programm! - Datapoint: {COUNT_OF_ITERATIONS}")
+        #else:
+            #print(f"Werbung! - Datapoint: {COUNT_OF_ITERATIONS}")
 
 
     f_object.close()
+        
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
