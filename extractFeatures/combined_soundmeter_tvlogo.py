@@ -8,13 +8,15 @@ from PIL import ImageGrab, Image
 import time
 import cv2 as cv
 import numpy as np
-import motionVectorLength_MVL as mvl
-import edgeChangeRatio_ECR as ECR
 from csv import writer
 import winsound
 import os
 from os.path import exists
 
+import motionVectorLength_MVL as mvl
+import edgeChangeRatio_ECR as ECR
+import farbintensität as farbchange
+import SIFT_RATIO as SR
 import currentDate as cd
 
 #extract MFCC, RMS, ZCR
@@ -75,6 +77,8 @@ LOGO_GEFUNDEN = 0
 PREV_FRAME = NONE
 ECR_RATIO = 0
 MVL_VALUES = []
+FARBWECHSEL_RATIO = 0
+SIFT_RATIO = 0
 
 #Get Window Handle of TV App and Resize
 windowHandle = pyautogui.getWindowsWithTitle(TV_APPLICATION_NAME)[0]
@@ -119,7 +123,7 @@ file_exists = exists("logoDetection.csv")
 with open('logoDetection.csv', 'a', newline='') as f_object: 
     writer_object = writer(f_object)
     if not file_exists:
-        list_data=["COUNT_OF_ITERATIONS","logoIndicationBooleanSQDIFF","resTM_SQDIFF_NORMED.max()","logoIndicationBooleanCCOEFF","resTM_CCOEFF_NORMED.max()","ECR_RATIO","MVL_VALUES[0]","MVL_VALUES[1]","RMS","DB","ZCR","MFCC","Tag","Zeit","LABEL"]
+        list_data=["COUNT_OF_ITERATIONS","logoIndicationBooleanSQDIFF","resTM_SQDIFF_NORMED.max()","logoIndicationBooleanCCOEFF","resTM_CCOEFF_NORMED.max()","ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
         writer_object.writerow(list_data) 
 
     print("=== Soundmeter Started ===")
@@ -144,6 +148,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
     stream.start_stream()
 
     while stream.is_active(): 
+        #time.sleep(1)
         COUNT_OF_ITERATIONS += 1
         #audio merkmale
         zero_crosses = (numpy.where(numpy.sign(decoded[:-1]) != numpy.sign(decoded[1:]))[0] + 1).size
@@ -158,9 +163,13 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
         if PREV_FRAME != NONE:
             MVL_VALUES = mvl.lucas_kanade_method_mvl(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),cv,np)
             ECR_RATIO = ECR.ECR(np.array(imageApplicationVideoStream), np.array(PREV_FRAME), edgeTVAPPwidth, edgeTVAPPheight, crop=False, dilate_rate = 5)
+            FARBWECHSEL_RATIO = farbchange.deltaE(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),cv,np)
+            SIFT_RATIO = SR.SIFT_RATIO(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),np,cv)
             #print("ecr ratio: "+str(ECR_RATIO))
             #print("mvl sum: "+str(MVL_VALUES[0]))
             #print("absolute: "+str(MVL_VALUES[1]))
+            #print(FARBWECHSEL_RATIO)
+            #print(SIFT_RATIO)
 
         else:
             print("No Previous Frame Detected")
@@ -188,7 +197,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
                     CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
                     #os.system("start sounds/programm.mp3")
                     imageExpectedLogo.save("screenshots/foundLogo"+str(COUNT_OF_ITERATIONS)+".png")
-                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),cd.day(),cd.time(),"PROGRAMM"]
+                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time(),"PROGRAMM"]
                     writer_object.writerow(list_data) 
                     end = time.time()
                     print("time elapsed: "+str(end - start))
@@ -203,7 +212,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
                     CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
                     imageExpectedLogo.save("screenshots/foundWerbung"+str(COUNT_OF_ITERATIONS)+".png")
                     #os.system("start sounds/werbung.mp3")
-                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),cd.day(),cd.time(),"WERBUNG"]
+                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED.max(),logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED.max(),ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],rms,str(db),zero_crosses,str(mfcc),FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time(),"WERBUNG"]
                     writer_object.writerow(list_data) 
                     end = time.time()
                     print("time elapsed: "+str(end - start))

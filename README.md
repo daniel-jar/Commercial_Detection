@@ -7,6 +7,7 @@ py -m pip install pip
 py -m pip install ffmpeg-python notused
 py -m pip install PyAudio (as admin)
 py -m pip install soundmeter notused
+pip install opencv-contrib-python
 
 
 

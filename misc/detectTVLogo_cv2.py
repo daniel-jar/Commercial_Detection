@@ -105,6 +105,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
         if PREV_FRAME != NONE:
             MVL_VALUES = mvl.lucas_kanade_method_mvl(np.array(imageApplicationVideoStream),np.array(PREV_FRAME),cv,np)
             ECR_RATIO = ECR.ECR(np.array(imageApplicationVideoStream), np.array(PREV_FRAME), edgeTVAPPwidth, edgeTVAPPheight, crop=False, dilate_rate = 5)
+            
             print("ecr ratio: "+str(ECR_RATIO))
             print("mvl sum: "+str(MVL_VALUES[0]))
             print("absolute: "+str(MVL_VALUES[1]))
