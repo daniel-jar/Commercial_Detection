@@ -4,40 +4,42 @@ def getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,
         resTM_SQDIFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_SQDIFF_NORMED) #<0.4 quite represantive
         resTM_CCOEFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_CCOEFF_NORMED) #>0.3 quite represantative
         logoIndicationBooleanSQDIFF = (resTM_SQDIFF_NORMED<=0.4) or (resTM_CCOEFF_NORMED>=0.9)
-        logoIndicationBooleanCCOEFF = (resTM_CCOEFF_NORMED>=0.3) and (resTM_SQDIFF_NORMED!=1)
+        logoIndicationBooleanCCOEFF = (resTM_CCOEFF_NORMED>=0.5) and (resTM_SQDIFF_NORMED!=1)
         if FOUND_LOGO_LOCATION!=None:
             imageExpectedLogo.save(FOUND_LOGO_LOCATION)
+        # print(resTM_CCOEFF_NORMED)
+        # print(resTM_SQDIFF_NORMED)
         return logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo
 
 
-def getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np):
+def getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO_UPPER,PICTURE_TV_LOGO_LOWER,PICTURE_TV_LOGO_NEWSTIME,cv,np):
     selectedRegionInteger=-1
-    logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
-    = getLogoConfidence(regionExpectedLogoLower,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)
 
+    #print("checking lower regions")
+    logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
+    = getLogoConfidence(regionExpectedLogoLower,imageApplicationVideoStream,PICTURE_TV_LOGO_LOWER,cv,np,None)
     if  not(logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
+        #print("checking newstime regions")
         logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
-        = getLogoConfidence(regionExpectedLogoNewsTime,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)
+        = getLogoConfidence(regionExpectedLogoNewsTime,imageApplicationVideoStream,PICTURE_TV_LOGO_NEWSTIME,cv,np,None)
+        if  not(logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
+            #print("checking upper regions")
+            logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
+            = getLogoConfidence(regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO_UPPER,cv,np,None) 
+            if  not(logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
+                currentSelectedExpectedRegion=currentSelectedExpectedRegion
+            else:
+                currentSelectedExpectedRegion=regionExpectedLogoUpper
+                selectedRegionInteger=0
+        else:
+            currentSelectedExpectedRegion=regionExpectedLogoNewsTime
+            selectedRegionInteger=2
     else:
         currentSelectedExpectedRegion=regionExpectedLogoLower
         selectedRegionInteger=1
-
-    if  not(logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
-        logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
-        = getLogoConfidence(regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)   
-    else:
-        currentSelectedExpectedRegion=regionExpectedLogoNewsTime
-        selectedRegionInteger=2
-
-    if  not(logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
-        currentSelectedExpectedRegion=currentSelectedExpectedRegion
-    else:
-        currentSelectedExpectedRegion=regionExpectedLogoUpper
-        selectedRegionInteger=0
-
     return currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF
 
-def getRegions(width,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN,EXPECTED_LOWER_MARGIN,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y):
+def getRegions(width,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN,EXPECTED_LOWER_MARGIN,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y,NEWSTIME_MARGINS):
     #Calculate Region of proposed Logo
     print("\ncalculating offset for region of tv logo")
     searchLogoX1 = width-EXPECTED_MARGIN_X-LEFT_BORDER_MARGIN
@@ -48,24 +50,22 @@ def getRegions(width,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,LEFT_BORDER_MARGIN,TOP_
     #regions for Logos
     regionExpectedLogoUpper=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
     regionExpectedLogoLower=(searchLogoX1,searchLogoY1+EXPECTED_LOWER_MARGIN,searchLogoX2,searchLogoY2+EXPECTED_LOWER_MARGIN)
-    regionExpectedLogoNewsTime=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
+    regionExpectedLogoNewsTime=(NEWSTIME_MARGINS[0],NEWSTIME_MARGINS[1],NEWSTIME_MARGINS[0]+NEWSTIME_MARGINS[2],NEWSTIME_MARGINS[1]+NEWSTIME_MARGINS[3])
     return regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime
 
-def getRegionsPYAUTOGUI(topLeftX,topLeftY,width,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,EXPECTED_LOWER_MARGIN):
+def getRegionsPYAUTOGUI(topLeftX,topLeftY,width,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,EXPECTED_LOWER_MARGIN,NEWSTIME_MARGINS,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN):
     #Calculate Region of proposed Logo
     print("\ncalculating offset for region of tv logo pyautogui")
     searchLogoX1=topLeftX+width-EXPECTED_MARGIN_X
     searchLogoY1=topLeftY+EXPECTED_MARGIN_Y
-    searchLogoX2=SIZE_OF_EXPECTED_LOGO_X
-    searchLogoY2=SIZE_OF_EXPECTED_LOGO_Y
+
+    searchLogoX1NewsTime=topLeftX+NEWSTIME_MARGINS[0]+LEFT_BORDER_MARGIN
+    searchLogoY1NewsTime=topLeftY+NEWSTIME_MARGINS[1]+TOP_BORDER_MARGIN
 
     #regions for Logos
-    regionExpectedLogoUpper=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
-    regionExpectedLogoLower=(searchLogoX1,searchLogoY1+EXPECTED_LOWER_MARGIN,searchLogoX2,searchLogoY2+EXPECTED_LOWER_MARGIN)
-    regionExpectedLogoNewsTime=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
-    #import pyautogui
-    #im1=pyautogui.screenshot(region=regionExpectedLogoUpperPYAUTOGUI)
-    #im1.save("testingPyAutoGuiRegions.png")
+    regionExpectedLogoUpper=(searchLogoX1,searchLogoY1,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
+    regionExpectedLogoLower=(searchLogoX1,searchLogoY1+EXPECTED_LOWER_MARGIN,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
+    regionExpectedLogoNewsTime=(searchLogoX1NewsTime,searchLogoY1NewsTime,NEWSTIME_MARGINS[2],NEWSTIME_MARGINS[3])
     return regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime
 
 def getRelativeWindowPosition(handleVariables,re):
