@@ -89,7 +89,7 @@ MVL_VALUES = []
 FARBWECHSEL_RATIO = 0
 SIFT_RATIO = 0
 PYAUTOGUI_LOCATION = None
-CONFIDENCE = 0.2
+CONFIDENCE = 0.3
 LIMIT_CHECK_NEW_LOGO = 10
 
 
@@ -226,7 +226,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                     currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoLowerPYAUTOGUI
                 elif selectedRegionInteger==2:
                     currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoNewsTimePYAUTOGUI
-                print("Changed Selected Region: "+str(selectedRegionInteger))
+                #print("Changed Selected Region: "+str(selectedRegionInteger))
 
         if TempCurrentState!=LOGO_GEFUNDEN:
             end = time.time()
