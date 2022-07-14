@@ -269,8 +269,8 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                 #Reset Counters
                 CONSECUTIVE_COUNTER = 0
                 CONSECUTIVE_FRAME_COOLDOWN_COUNTER = CONSECUTIVE_COOLDOWN
-            else:
-                CONSECUTIVE_FRAME_COOLDOWN_COUNTER-=1
+        else:
+            CONSECUTIVE_FRAME_COOLDOWN_COUNTER-=1
             
         #print(COUNT_OF_ITERATIONS)
 
