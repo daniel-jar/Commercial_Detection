@@ -180,14 +180,14 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
         = LogoConfidence.getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)
 
-#         print(resTM_CCOEFF_NORMED)
-#         print(resTM_SQDIFF_NORMED)
-#         print(logoIndicationBooleanCCOEFF)
-#         print(logoIndicationBooleanSQDIFF)'
+        # print(resTM_CCOEFF_NORMED)
+        # print(resTM_SQDIFF_NORMED)
+        # print(logoIndicationBooleanCCOEFF)
+        # print(logoIndicationBooleanSQDIFF)
 
         #im = Image.open(imageExpectedLogo)
         brightness = (ImageStat.Stat(imageExpectedLogo)).mean[0]
-        print(brightness)
+        # print(brightness)
 
         TempCurrentState = LOGO_GEFUNDEN
             #Switching to Programm gefunden
@@ -203,7 +203,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                     CONSECUTIVE_COUNTER = 0
     
         #Switching to Werbung gefunden
-        elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1 and brightness < 200:
+        elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1 and brightness < 240:
                 CONSECUTIVE_COUNTER+=1
                 if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
                     currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
@@ -240,7 +240,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             CONSECUTIVE_COUNTER = 0
             CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
             
-        print(COUNT_OF_ITERATIONS)
+        #print(COUNT_OF_ITERATIONS)
 
     f_object.close()
     stream.stop_stream()
