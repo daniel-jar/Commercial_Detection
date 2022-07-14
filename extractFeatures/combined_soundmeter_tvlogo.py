@@ -51,7 +51,7 @@ ZCR = 0
 PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION=(1301,849)
 TV_APPLICATION_NAME = "Hauppauge WinTV"
 COUNT_OF_ITERATIONS = 0
-CONSECUTIVE_FRAMES_FOR_SWITCHING = 25
+CONSECUTIVE_FRAMES_FOR_SWITCHING = 5
 CONSECUTIVE_COUNTER = 0
 CONSECUTIVE_FRAME_COOLDOWN = 0
 CONSECUTIVE_COOLDOWN_COUNTER = 0
@@ -159,6 +159,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             ECR_RATIO = ECR.ECR(currentFrame,PREV_FRAME, edgeTVAPPwidth, edgeTVAPPheight, crop=False, dilate_rate = 5)
             FARBWECHSEL_RATIO = farbchange.deltaE(currentFrame,PREV_FRAME,cv,np)
             SIFT_RATIO = SR.SIFT_RATIO(currentFrame,PREV_FRAME,np,cv)
+            t=1
         else:
             print("Check Frame Values?")
             MVL_VALUES=[0,0]
@@ -168,62 +169,68 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
 
         PREV_FRAME = np.array(imageApplicationVideoStream)
 
+        # imageExpectedLogo = imageApplicationVideoStream.crop((currentSelectedExpectedRegion))
+        # imageExpectedLogoAsNumpy = cv.cvtColor(np.array(imageExpectedLogo), cv.COLOR_RGB2GRAY)
+        # resTM_SQDIFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_SQDIFF_NORMED) #<0.4 quite represantive
+        # resTM_CCOEFF_NORMED = cv.matchTemplate(imageExpectedLogoAsNumpy, PICTURE_TV_LOGO, cv.TM_CCOEFF_NORMED) #>0.3 quite represantative
+        # logoIndicationBooleanSQDIFF = (resTM_SQDIFF_NORMED<=0.4) or (resTM_CCOEFF_NORMED>=0.9)
+        # logoIndicationBooleanCCOEFF = (resTM_CCOEFF_NORMED>=0.3) #or (resTM_SQDIFF_NORMED<=0.05).any()
+
         logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
         = LogoConfidence.getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)
 
-        #Switch Label If Confident Enough
-        if logoIndicationBooleanCCOEFF == logoIndicationBooleanSQDIFF:
-
-            TempCurrentState = LOGO_GEFUNDEN
-            PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
-
+        TempCurrentState = LOGO_GEFUNDEN
             #Switching to Programm gefunden
-            if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
+        if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
+            CONSECUTIVE_COUNTER+=1
+            if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
+                PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
+                if PYAUTOGUI_LOCATION!=None:
+                    STATE = "Programm"
+                    LOGO_GEFUNDEN = 1
+                else:
+                    print("Logo durch Merkmale gefunden aber PYAUTOGUI Fand das Logo nicht")
+                    CONSECUTIVE_COUNTER = 0
+    
+        #Switching to Werbung gefunden
+        elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
                 CONSECUTIVE_COUNTER+=1
                 if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
-                    if PYAUTOGUI_LOCATION!=None:
-                        STATE = "Programm"
-                        LOGO_GEFUNDEN = 1
+                    currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
+                    =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np)
+
+                    if selectedRegionInteger==0:
+                        currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoUpperPYAUTOGUI
+                    elif selectedRegionInteger==1:
+                        currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoLowerPYAUTOGUI
+                    elif selectedRegionInteger==2:
+                        currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoNewsTimePYAUTOGUI
                     else:
-                        print("Logo durch Merkmale gefunden aber PYAUTOGUI Fand das Logo nicht")
-                        CONSECUTIVE_COUNTER = 0
-        
-            #Switching to Werbung gefunden
-            elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
-                    CONSECUTIVE_COUNTER+=1
-                    if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
-                        currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
-                        =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np)
-
-                        if selectedRegionInteger==0:
-                            currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoUpperPYAUTOGUI
-                        elif selectedRegionInteger==1:
-                            currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoLowerPYAUTOGUI
-                        elif selectedRegionInteger==2:
-                            currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoNewsTimePYAUTOGUI
-
+                        PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
                         print("Changed Selected Region: "+str(selectedRegionInteger))
-                        
-                        #Confirmed that Logo is not visible
-                        if  not(logoIndicationBooleanCCOEFF or logoIndicationBooleanSQDIFF) and PYAUTOGUI_LOCATION==None:
-                            STATE = "Werbung"
-                            LOGO_GEFUNDEN = 0
-                        else:   
-                            print("Werbung durch Merkmale gefunden aber PYAUTOGUI Fand ein Logo")
-                            CONSECUTIVE_COUNTER = 0
-                    
 
-            if TempCurrentState!=LOGO_GEFUNDEN:
-                    end = time.time()
-                    print("time elapsed: "+str(end - start))
-                    print(COUNT_OF_ITERATIONS)
-                    print("In den Status "+STATE+" gewechselt")
-                    list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time(),"PROGRAMM"]
-                    writer_object.writerow(list_data) 
-                    imageExpectedLogo.save("screenshots/"+STATE+str(COUNT_OF_ITERATIONS)+".png")
-                    #Reset Counters
-                    CONSECUTIVE_COUNTER = 0
-                    CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
+                    #Confirmed that Logo is not visible
+                    if  not(logoIndicationBooleanCCOEFF or logoIndicationBooleanSQDIFF) and PYAUTOGUI_LOCATION==None:
+                        STATE = "Werbung"
+                        LOGO_GEFUNDEN = 0
+                    else:   
+                        print("Werbung durch Merkmale gefunden aber PYAUTOGUI Fand ein Logo")
+                        CONSECUTIVE_COUNTER = 0
+                
+
+        if TempCurrentState!=LOGO_GEFUNDEN:
+            end = time.time()
+            print("time elapsed: "+str(end - start))
+            print(COUNT_OF_ITERATIONS)
+            print("In den Status "+STATE+" gewechselt")
+            list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time(),"PROGRAMM"]
+            writer_object.writerow(list_data) 
+            imageExpectedLogo.save("screenshots/"+STATE+str(COUNT_OF_ITERATIONS)+".png")
+            #Reset Counters
+            CONSECUTIVE_COUNTER = 0
+            CONSECUTIVE_COOLDOWN_COUNTER = CONSECUTIVE_FRAME_COOLDOWN
+            
+        print(COUNT_OF_ITERATIONS)
 
     f_object.close()
     stream.stop_stream()
