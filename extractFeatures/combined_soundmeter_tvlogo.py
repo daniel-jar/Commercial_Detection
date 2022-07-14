@@ -1,5 +1,6 @@
 #visuelle merkmale
 from ast import And
+from logging import getLoggerClass
 from pickle import NONE
 from queue import Empty
 from cv2 import SIFT
@@ -15,6 +16,7 @@ from csv import writer
 import winsound
 import os
 from os.path import exists
+from getLogoConfidence import getLogoConfidence
 
 import motionVectorLength_MVL as mvl
 import edgeChangeRatio_ECR as ECR
@@ -48,8 +50,8 @@ ZCR = 0
 #define Variables
 PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION=(1301,849)
 TV_APPLICATION_NAME = "Hauppauge WinTV"
-COUNT_OF_ITERATIONS = 93095
-CONSECUTIVE_FRAMES_FOR_SWITCHING = 50
+COUNT_OF_ITERATIONS = 0
+CONSECUTIVE_FRAMES_FOR_SWITCHING = 25
 CONSECUTIVE_COUNTER = 0
 CONSECUTIVE_FRAME_COOLDOWN = 0
 CONSECUTIVE_COOLDOWN_COUNTER = 0
@@ -73,6 +75,7 @@ LEFT_BORDER_MARGIN = 9
 TOP_BORDER_MARGIN = 33
 RIGHT_BORDER_MARGIN = 10
 BOTTOM_BORDER_MARGIN = 89
+EXPECTED_LOWER_MARGIN = 64
 
 #indicate if logo found
 LOGO_GEFUNDEN = 0
@@ -87,6 +90,7 @@ SIFT_RATIO = 0
 PYAUTOGUI_LOCATION = None
 CONFIDENCE = 0.3
 
+
 FILEPATH_DATASET="dataset\logoDetection.csv"
 
 #Get Window Handle of TV App and Resize
@@ -94,49 +98,25 @@ windowHandle = pyautogui.getWindowsWithTitle(TV_APPLICATION_NAME)[0]
 windowHandle.size = PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION
 
 #Get Relative Window Position
-handleVariables=str(windowHandle).split(",")
-topLeftX=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[0].split(" ")[1]))))
-print("\ntopleftX of tv application:: "+str(topLeftX))
-topLeftY=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[1]))))
-print("topleftY of tv application:: "+str(topLeftY))
-width=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[2]))))
-print("width of tv application: "+str(width))
-height=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[3]))))
-print("height of tv application: "+str(height))
+topLeftX,topLeftY,width,height=LogoConfidence.getRelativeWindowPosition(str(windowHandle).split(","),re)
 
 #Calculate Offset for Video Without Borders
-print("\ncalculating offset for region of video stream without borders")
-edgeTVAppX=topLeftX+LEFT_BORDER_MARGIN
-edgeTVAppY=topLeftY+TOP_BORDER_MARGIN
-edgeTVAPPwidth=topLeftX+width-RIGHT_BORDER_MARGIN
-edgeTVAPPheight=topLeftY+height-BOTTOM_BORDER_MARGIN
-regionTVApplicationFullScreenshot=(edgeTVAppX,edgeTVAppY,edgeTVAPPwidth,edgeTVAPPheight)
+regionTVApplicationFullScreenshot,edgeTVAPPwidth,edgeTVAPPheight=\
+LogoConfidence.getTVApplicationWithoutEdgesRegion(topLeftX,topLeftY,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN,width,height,RIGHT_BORDER_MARGIN,BOTTOM_BORDER_MARGIN)
 
-
-#regionTVApplication=(topLeftX+9,topLeftY+33,topLeftX+width-10,topLeftY+height-89)
-print("EXPECTED REGION OF TV APP: " + str(regionTVApplicationFullScreenshot))
-
-#Calculate Region of proposed Logo
-print("\ncalculating offset for region of tv logo")
-searchLogoX1 = width-EXPECTED_MARGIN_X-LEFT_BORDER_MARGIN
-searchLogoY1 = EXPECTED_MARGIN_Y-TOP_BORDER_MARGIN
-searchLogoX2 = SIZE_OF_EXPECTED_LOGO_X+searchLogoX1
-searchLogoY2 = SIZE_OF_EXPECTED_LOGO_Y+searchLogoY1
-
-#regions for Logos
-regionExpectedLogoUpper=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
-regionExpectedLogoLower=(searchLogoX1,searchLogoY1+64,searchLogoX2,searchLogoY2+64)
-regionExpectedLogoNewsTime=(searchLogoX1,searchLogoY1,searchLogoX2,searchLogoY2)
-
-#most used region
+#regions for opencv
+regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime =\
+LogoConfidence.getRegions(width,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN,EXPECTED_LOWER_MARGIN,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
 currentSelectedExpectedRegion=regionExpectedLogoUpper
 
-print("EXPECTED REGION OF LOGO Upper: " + str(regionExpectedLogoUpper))
-
+#regions for pyautogui
+regionExpectedLogoUpperPYAUTOGUI,regionExpectedLogoLowerPYAUTOGUI,regionExpectedLogoNewsTimePYAUTOGUI =\
+LogoConfidence.getRegionsPYAUTOGUI(topLeftX,topLeftY,width,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,EXPECTED_LOWER_MARGIN)
+currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoUpperPYAUTOGUI
 
 #Data will be appended into file
 file_exists = exists(FILEPATH_DATASET)
-with open('logoDetection.csv', 'a', newline='') as f_object: 
+with open(FILEPATH_DATASET, 'a', newline='') as f_object: 
     writer_object = writer(f_object)
     if not file_exists:
         list_data=["COUNT_OF_ITERATIONS","logoIndicationBooleanSQDIFF","resTM_SQDIFF_NORMED.max()","logoIndicationBooleanCCOEFF","resTM_CCOEFF_NORMED.max()","ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
@@ -174,7 +154,7 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
             
         imageApplicationVideoStream = ImageGrab.grab(bbox=regionTVApplicationFullScreenshot)
         currentFrame = np.array(imageApplicationVideoStream)
-        if len(PREV_FRAME) != 0 and (PREV_FRAME.max()!=0 and currentFrame.max()!=0): #and (PREV_FRAME != currentFrame).all()
+        if len(PREV_FRAME) != 0 and (PREV_FRAME.max()!=PREV_FRAME.min() and currentFrame.max()!=currentFrame.min()): #and (PREV_FRAME != currentFrame).all()
             MVL_VALUES = mvl.lucas_kanade_method_mvl(currentFrame,PREV_FRAME,cv,np)
             ECR_RATIO = ECR.ECR(currentFrame,PREV_FRAME, edgeTVAPPwidth, edgeTVAPPheight, crop=False, dilate_rate = 5)
             FARBWECHSEL_RATIO = farbchange.deltaE(currentFrame,PREV_FRAME,cv,np)
@@ -190,12 +170,12 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
 
         logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
         = LogoConfidence.getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)
-        
+
         #Switch Label If Confident Enough
         if logoIndicationBooleanCCOEFF == logoIndicationBooleanSQDIFF:
 
             TempCurrentState = LOGO_GEFUNDEN
-            PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegion)
+            PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
 
             #Switching to Programm gefunden
             if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
@@ -212,8 +192,18 @@ with open('logoDetection.csv', 'a', newline='') as f_object:
             elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
                     CONSECUTIVE_COUNTER+=1
                     if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
-                        currentSelectedExpectedRegion,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
-                        =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)
+                        currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
+                        =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np)
+
+                        if selectedRegionInteger==0:
+                            currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoUpperPYAUTOGUI
+                        elif selectedRegionInteger==1:
+                            currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoLowerPYAUTOGUI
+                        elif selectedRegionInteger==2:
+                            currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoNewsTimePYAUTOGUI
+
+                        print("Changed Selected Region: "+str(selectedRegionInteger))
+                        
                         #Confirmed that Logo is not visible
                         if  not(logoIndicationBooleanCCOEFF or logoIndicationBooleanSQDIFF) and PYAUTOGUI_LOCATION==None:
                             STATE = "Werbung"
