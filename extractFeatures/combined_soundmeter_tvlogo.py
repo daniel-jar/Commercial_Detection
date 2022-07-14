@@ -8,7 +8,7 @@ import pyautogui
 import pygetwindow
 import re #get numbers from string
 import PIL #save images
-from PIL import ImageGrab, Image
+from PIL import ImageGrab, Image,  ImageStat
 import time
 import cv2 as cv
 import numpy as np
@@ -33,6 +33,7 @@ from math import log10
 import audioop  
 import librosa
 
+from numpy.linalg import norm
 
 start = time.time()
 
@@ -88,7 +89,7 @@ MVL_VALUES = []
 FARBWECHSEL_RATIO = 0
 SIFT_RATIO = 0
 PYAUTOGUI_LOCATION = None
-CONFIDENCE = 0.3
+CONFIDENCE = 0.2
 
 
 FILEPATH_DATASET="dataset\logoDetection.csv"
@@ -179,6 +180,15 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         logoIndicationBooleanSQDIFF, logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
         = LogoConfidence.getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np,None)
 
+#         print(resTM_CCOEFF_NORMED)
+#         print(resTM_SQDIFF_NORMED)
+#         print(logoIndicationBooleanCCOEFF)
+#         print(logoIndicationBooleanSQDIFF)'
+
+        #im = Image.open(imageExpectedLogo)
+        brightness = (ImageStat.Stat(imageExpectedLogo)).mean[0]
+        print(brightness)
+
         TempCurrentState = LOGO_GEFUNDEN
             #Switching to Programm gefunden
         if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
@@ -193,7 +203,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                     CONSECUTIVE_COUNTER = 0
     
         #Switching to Werbung gefunden
-        elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1:
+        elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1 and brightness < 200:
                 CONSECUTIVE_COUNTER+=1
                 if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
                     currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
@@ -223,7 +233,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             print("time elapsed: "+str(end - start))
             print(COUNT_OF_ITERATIONS)
             print("In den Status "+STATE+" gewechselt")
-            list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time(),"PROGRAMM"]
+            list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,brightness,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time(),"PROGRAMM"]
             writer_object.writerow(list_data) 
             imageExpectedLogo.save("screenshots/"+STATE+str(COUNT_OF_ITERATIONS)+".png")
             #Reset Counters
