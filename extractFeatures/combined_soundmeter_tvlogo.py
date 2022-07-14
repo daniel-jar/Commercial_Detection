@@ -90,6 +90,7 @@ FARBWECHSEL_RATIO = 0
 SIFT_RATIO = 0
 PYAUTOGUI_LOCATION = None
 CONFIDENCE = 0.2
+LIMIT_CHECK_NEW_LOGO = 10
 
 
 FILEPATH_DATASET="dataset\logoDetection.csv"
@@ -187,7 +188,6 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
 
         #im = Image.open(imageExpectedLogo)
         brightness = (ImageStat.Stat(imageExpectedLogo)).mean[0]
-        # print(brightness)
 
         TempCurrentState = LOGO_GEFUNDEN
             #Switching to Programm gefunden
@@ -206,19 +206,8 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1 and brightness < 240:
                 CONSECUTIVE_COUNTER+=1
                 if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
-                    currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
-                    =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np)
 
-                    if selectedRegionInteger==0:
-                        currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoUpperPYAUTOGUI
-                    elif selectedRegionInteger==1:
-                        currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoLowerPYAUTOGUI
-                    elif selectedRegionInteger==2:
-                        currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoNewsTimePYAUTOGUI
-                    else:
-                        PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
-                        print("Changed Selected Region: "+str(selectedRegionInteger))
-
+                    PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
                     #Confirmed that Logo is not visible
                     if  not(logoIndicationBooleanCCOEFF or logoIndicationBooleanSQDIFF) and PYAUTOGUI_LOCATION==None:
                         STATE = "Werbung"
@@ -226,7 +215,18 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                     else:   
                         print("Werbung durch Merkmale gefunden aber PYAUTOGUI Fand ein Logo")
                         CONSECUTIVE_COUNTER = 0
-                
+
+        #Check other places for Logo when Werbung is activated
+        if COUNT_OF_ITERATIONS%LIMIT_CHECK_NEW_LOGO==0 and not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and brightness < 240 and LOGO_GEFUNDEN==0:
+                currentSelectedExpectedRegion,selectedRegionInteger,logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF\
+                =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoUpper,imageApplicationVideoStream,PICTURE_TV_LOGO,cv,np)
+                if selectedRegionInteger==0:
+                    currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoUpperPYAUTOGUI
+                elif selectedRegionInteger==1:
+                    currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoLowerPYAUTOGUI
+                elif selectedRegionInteger==2:
+                    currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoNewsTimePYAUTOGUI
+                print("Changed Selected Region: "+str(selectedRegionInteger))
 
         if TempCurrentState!=LOGO_GEFUNDEN:
             end = time.time()
