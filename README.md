@@ -14,6 +14,8 @@ sift
 py -m pip install pipwin
 py -m pipwin install pyaudio
 
+python -m pip install pyautogui install pygetwindow install opencv-python install pyglet install regex install opencv-contrib-python install librosa install sift install pipwin pipwin install pyaudio
+
 Microsoft Visual C++ at least 14.0 Needed (https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170)
 
 https://github.com/DavidSie/MotionVectorEstimator/blob/master/logsearch.py
