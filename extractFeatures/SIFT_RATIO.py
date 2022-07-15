@@ -7,8 +7,8 @@ def SIFT_RATIO(img1,img2,np,cv2):
     kp1, des1 = surf.detectAndCompute(img1,None)
     kp2, des2 = surf.detectAndCompute(img2,None)
     if des2 is not None and des1 is not None and len(kp1)!=0 and len(kp2)!=0:
-        if des2.all()==des1.all():
-            return 100
+        if np.array_equal(des1,des2):
+            return 1
         else:
             # BFMatcher with default params
             bf = cv2.BFMatcher()

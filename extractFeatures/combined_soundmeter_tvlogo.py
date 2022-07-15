@@ -48,11 +48,14 @@ RMS = 0
 DB = 0
 ZCR = 0
 
+#Application Relative Position
+APPLICATION_POSITION = [0,0,0,0]
+
 #define Variables
 PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION=(1301,849)
 TV_APPLICATION_NAME = "Hauppauge WinTV"
 COUNT_OF_ITERATIONS = 0
-CONSECUTIVE_FRAMES_FOR_SWITCHING = 10
+CONSECUTIVE_FRAMES_FOR_SWITCHING = 7
 CONSECUTIVE_COUNTER = 0
 CONSECUTIVE_FRAME_COOLDOWN_COUNTER = 0
 CONSECUTIVE_COOLDOWN = 20
@@ -71,25 +74,6 @@ PICTURE_TV_LOGO_NEWSTIME = cv.imread("locators\pro7_newstime.png",cv.IMREAD_GRAY
 PICTURE_TV_LOGO = PICTURE_TV_LOGO_UPPER
 PICTURE_TV_LOGO_LOWER = PICTURE_TV_LOGO_UPPER
 
-#EDGES WITH Border
-EXPECTED_MARGIN_X = 160
-EXPECTED_MARGIN_Y = 70
-SIZE_OF_EXPECTED_LOGO_X = 48
-SIZE_OF_EXPECTED_LOGO_Y = 48
-
-#BORDEREDGES for Picture without Appplication Borders
-LEFT_BORDER_MARGIN = 9
-TOP_BORDER_MARGIN = 33
-RIGHT_BORDER_MARGIN = 10
-BOTTOM_BORDER_MARGIN = 89
-EXPECTED_LOWER_MARGIN = 64
-
-#BORDEREDGES for Picture without Appplication Borders
-NEWSTIME_MARGIN_TOPLEFTX = 97
-NEWSTIME_MARGIN_TOPLEFTY= 623
-SIZE_OF_NEWSTIME_X = 20
-SIZE_OF_NEWSTIME_Y = 20
-NEWSTIME_MARGINS=[NEWSTIME_MARGIN_TOPLEFTX,NEWSTIME_MARGIN_TOPLEFTY,SIZE_OF_NEWSTIME_X,SIZE_OF_NEWSTIME_Y]
 
 #indicate if logo found
 LOGO_GEFUNDEN = 0
@@ -103,12 +87,17 @@ FARBWECHSEL_RATIO = 0
 SIFT_RATIO = 0
 PYAUTOGUI_LOCATION = None
 CONFIDENCE = 0.3
-LIMIT_CHECK_NEW_LOGO = 10
+LIMIT_CHECK_NEW_LOGO = 50
 BRIGHTNESS_EDGE = 190
-BRIGHTNESS_LIMIT = 230
+BRIGHTNESS_LIMIT = 240
 BRIGHTNESS_BOOLEAN= False
 
+#REGION MAPPING
+UPPER,LOWER,NEWSTIME,WIDER = 0,1,2,3
+REGION_NAMES=["UPPER","LOWER","NEWSTIME","WIDER"]
 
+
+#DATASet Export
 FILEPATH_DATASET="dataset\logoDetection1.csv"
 
 #Get Window Handle of TV App and Resize
@@ -116,36 +105,33 @@ windowHandle = pyautogui.getWindowsWithTitle(TV_APPLICATION_NAME)[0]
 windowHandle.size = PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION
 
 #Get Relative Window Position
-topLeftX,topLeftY,width,height=LogoConfidence.getRelativeWindowPosition(str(windowHandle).split(","),re)
+APPLICATION_POSITION = LogoConfidence.getRelativeWindowPosition(str(windowHandle).split(","),re)
+
 
 #Calculate Offset for Video Without Borders
 regionTVApplicationFullScreenshot,edgeTVAPPwidth,edgeTVAPPheight=\
-LogoConfidence.getTVApplicationWithoutEdgesRegion(topLeftX,topLeftY,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN,width,height,RIGHT_BORDER_MARGIN,BOTTOM_BORDER_MARGIN)
+LogoConfidence.getTVApplicationWithoutEdgesRegion(APPLICATION_POSITION)
 
 #regions for opencv
-regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime =\
-LogoConfidence.getRegions(width,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN,EXPECTED_LOWER_MARGIN,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y,NEWSTIME_MARGINS)
-currentSelectedExpectedRegion=regionExpectedLogoUpper
+regions =\
+LogoConfidence.getRegions(APPLICATION_POSITION[2])
+currentSelectedExpectedRegion=regions[UPPER]
 
 #regions for pyautogui
-regionExpectedLogoUpperPYAUTOGUI,regionExpectedLogoLowerPYAUTOGUI,regionExpectedLogoNewsTimePYAUTOGUI =\
-LogoConfidence.getRegionsPYAUTOGUI(topLeftX,topLeftY,width,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y,EXPECTED_MARGIN_X,EXPECTED_MARGIN_Y,EXPECTED_LOWER_MARGIN,NEWSTIME_MARGINS,LEFT_BORDER_MARGIN,TOP_BORDER_MARGIN)
-currentSelectedExpectedRegionPYAUTOGUI=regionExpectedLogoUpperPYAUTOGUI
+regionsPYAUTOGUI =\
+LogoConfidence.getRegionsPYAUTOGUI(APPLICATION_POSITION)
+currentSelectedExpectedRegionPYAUTOGUI=regionsPYAUTOGUI[UPPER]
 
 imageApplicationVideoStream = ImageGrab.grab(bbox=regionTVApplicationFullScreenshot)
-
-newimg = imageApplicationVideoStream.crop((regionExpectedLogoLower))
-newimg.save("debugging/lower.png")
-
-newimg = imageApplicationVideoStream.crop((regionExpectedLogoNewsTime))
-newimg.save("debugging/newstime.png")
-
-im1=pyautogui.screenshot(region=regionExpectedLogoLowerPYAUTOGUI)
-im1.save("debugging/lowerpyautogui.png")
-
-m1=pyautogui.screenshot(region=regionExpectedLogoNewsTimePYAUTOGUI)
-m1.save("debugging/newstimepyautogui.png")
-
+#debug regions with CV and PYAuto
+for i in range(len(regions)):
+    print("Taking Screenshot for Region: "+REGION_NAMES[i])
+    selectedRegion = regions[i]
+    selectedRegionPYAUTOGUI = regionsPYAUTOGUI[i]
+    newimg = imageApplicationVideoStream.crop((selectedRegion))
+    newimg.save("debugging/region"+REGION_NAMES[i]+".png")
+    im1=pyautogui.screenshot(region=selectedRegionPYAUTOGUI)
+    im1.save("debugging/regionPYAUTO"+REGION_NAMES[i]+".png")
 
 #Data will be appended into file
 file_exists = exists(FILEPATH_DATASET)
@@ -263,7 +249,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                 print("time elapsed: "+str(end - start))
                 print(COUNT_OF_ITERATIONS)
                 print("In den Status "+STATE+" gewechselt")
-                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,BRIGHTNESS_BOOLEAN,MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),"PROGRAMM"]
+                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),"PROGRAMM"]
                 writer_object.writerow(list_data) 
                 imageExpectedLogo.save("screenshots/"+STATE+str(COUNT_OF_ITERATIONS)+".png")
                 #Reset Counters
