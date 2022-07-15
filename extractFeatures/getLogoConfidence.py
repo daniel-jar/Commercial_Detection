@@ -25,21 +25,18 @@ SIZE_OF_NEWSTIME_X = 20
 SIZE_OF_NEWSTIME_Y = 20
 NEWSTIME_MARGINS=[NEWSTIME_MARGIN_TOPLEFTX,NEWSTIME_MARGIN_TOPLEFTY,SIZE_OF_NEWSTIME_X,SIZE_OF_NEWSTIME_Y]
 
+#BORDEREDGES for 4:3
+EXPECTED_LEFTER_MARGIN_X = -143
+
 #BORDEREDGES for Picture without Appplication Borders
 LEFT_BORDER_MARGIN = 9
 TOP_BORDER_MARGIN = 33
 RIGHT_BORDER_MARGIN = 10
 BOTTOM_BORDER_MARGIN = 89
 
-UPPER,LOWER,NEWSTIME,WIDER = 0,1,2,3
-REGION_NAMES=["UPPER","LOWER","NEWSTIME","WIDER"]
-CONFIDENCES = [0.3,0.3,0.7,0.3]
-
-def getRegionNames():
-    return REGION_NAMES
-
-def getRegionIndexes():
-    return UPPER,LOWER,NEWSTIME,WIDER
+UPPER,LOWER,NEWSTIME,WIDER,LEFTER = 0,1,2,3,4
+REGION_NAMES=["UPPER","LOWER","NEWSTIME","WIDER","LEFTER"]
+CONFIDENCES = [0.3,0.3,0.7,0.3,0.3]
 
 def getConfindences():
     return CONFIDENCES
@@ -102,7 +99,9 @@ def getRegions(WIDTH):
     regionExpectedLogoLower=(searchLogoX1,searchLogoY1+EXPECTED_LOWER_MARGIN_Y,searchLogoX2,searchLogoY2+EXPECTED_LOWER_MARGIN_Y)
     regionExpectedLogoNewsTime=(NEWSTIME_MARGINS[0],NEWSTIME_MARGINS[1],NEWSTIME_MARGINS[0]+NEWSTIME_MARGINS[2],NEWSTIME_MARGINS[1]+NEWSTIME_MARGINS[3])
     regionExpectedLogoWide=(searchLogoX1+EXPECTED_WIDER_LEFT_MARGIN_X,searchLogoY1+EXPECTED_WIDER_LEFT_MARGIN_Y ,searchLogoX2+EXPECTED_WIDER_LEFT_MARGIN_X+EXPECTED_WIDER_SIZE_MARGIN_X,searchLogoY2+EXPECTED_WIDER_SIZE_MARGIN_Y+EXPECTED_WIDER_LEFT_MARGIN_Y)
-    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide]
+    regionExpectedLogoLEFTER=(searchLogoX1+EXPECTED_LEFTER_MARGIN_X,searchLogoY1,searchLogoX2+EXPECTED_LEFTER_MARGIN_X,searchLogoY2)
+    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide,regionExpectedLogoLEFTER]
+    
 
 def getRegionsPYAUTOGUI(APPLICATION_POSITION):
     #Calculate Region of proposed Logo 
@@ -123,8 +122,9 @@ def getRegionsPYAUTOGUI(APPLICATION_POSITION):
     regionExpectedLogoNewsTime=(searchLogoX1NewsTime,searchLogoY1NewsTime,NEWSTIME_MARGINS[2],NEWSTIME_MARGINS[3])
     regionExpectedLogoUpper=(searchLogoX1,searchLogoY1,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
     regionExpectedLogoWide=(searchLogoX1+EXPECTED_WIDER_LEFT_MARGIN_X,searchLogoY1+EXPECTED_WIDER_LEFT_MARGIN_Y,SIZE_OF_EXPECTED_LOGO_X+EXPECTED_WIDER_SIZE_MARGIN_X,SIZE_OF_EXPECTED_LOGO_Y+EXPECTED_WIDER_SIZE_MARGIN_Y)
+    regionExpectedLogoLefter=(searchLogoX1+EXPECTED_LEFTER_MARGIN_X,searchLogoY1,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
 
-    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide]
+    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide,regionExpectedLogoLefter]
 
 def getRelativeWindowPosition(handleVariables,re):
     TOP_LEFT_X=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[0].split(" ")[1]))))
@@ -159,4 +159,5 @@ def getLogos(cv):
     PICTURE_TV_LOGO_NEWSTIME = cv.imread("locators\pro7_newstime.png",cv.IMREAD_GRAYSCALE)
     PICTURE_TV_LOGO_WIDER = cv.imread("locators\pro7_gezerrt.png",cv.IMREAD_GRAYSCALE)
     PICTURE_TV_LOGO_LOWER = PICTURE_TV_LOGO_UPPER
-    return [PICTURE_TV_LOGO_UPPER,PICTURE_TV_LOGO_LOWER,PICTURE_TV_LOGO_NEWSTIME,PICTURE_TV_LOGO_WIDER]
+    PICTURE_TV_LOGO_LEFTER = PICTURE_TV_LOGO_UPPER
+    return [PICTURE_TV_LOGO_UPPER,PICTURE_TV_LOGO_LOWER,PICTURE_TV_LOGO_NEWSTIME,PICTURE_TV_LOGO_WIDER,PICTURE_TV_LOGO_LEFTER]
