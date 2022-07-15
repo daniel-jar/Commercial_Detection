@@ -204,7 +204,11 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                     if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
                         PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(CURRENT_PICTURE_TV_LOGO,grayscale=True,confidence=CURRENT_CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
                         #Confirmed that Logo is not visible
-                        if  not(logoIndicationBooleanCCOEFF or logoIndicationBooleanSQDIFF) and PYAUTOGUI_LOCATION==None:
+                        #check other regions there might be a logo
+                        currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,currentState\
+                        =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,regions,regionsPYAUTOGUI,imageApplicationVideoStream,LOGO_COLLECTION,cv,np)
+
+                        if  not(logoIndicationBooleanCCOEFF or logoIndicationBooleanSQDIFF) and PYAUTOGUI_LOCATION==None and currentState == False:
                             STATE = "Werbung"
                             LOGO_GEFUNDEN = 0
                         else:   
