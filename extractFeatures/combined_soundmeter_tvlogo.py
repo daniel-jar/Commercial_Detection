@@ -54,11 +54,11 @@ APPLICATION_POSITION = [0,0,0,0]
 #define Variables
 PREFFERED_WINDOW_SIZE_OF_TV_APPLICATION=(1301,849)
 TV_APPLICATION_NAME = "Hauppauge WinTV"
+
+#Counter
 COUNT_OF_ITERATIONS = 0
-CONSECUTIVE_FRAMES_FOR_SWITCHING = 7
 CONSECUTIVE_COUNTER = 0
 CONSECUTIVE_FRAME_COOLDOWN_COUNTER = 0
-CONSECUTIVE_COOLDOWN = 20
 
 #prevFrame for Visuelle Merkmale
 PREV_FRAME = []
@@ -67,19 +67,18 @@ MVL_VALUES = []
 FARBWECHSEL_RATIO = 0
 SIFT_RATIO = 0
 PYAUTOGUI_LOCATION = None
-CONFIDENCE = 0.3
+
+#EDGE Values
 LIMIT_CHECK_NEW_LOGO = 50
 BRIGHTNESS_EDGE = 190
 BRIGHTNESS_LIMIT = 240
 BRIGHTNESS_BOOLEAN= False
+CONSECUTIVE_COOLDOWN = 20
+CONSECUTIVE_FRAMES_FOR_SWITCHING = 5
 
-#REGION MAPPING
-# UPPER,LOWER,NEWSTIME,WIDER = LogoConfidence.getRegionIndexes()
-# REGION_NAMES= LogoConfidence.getRegionNames()
-#DATASet Export
 FILEPATH_DATASET="dataset\logoDetection1.csv"
-
 LOGO_COLLECTION = LogoConfidence.getLogos(cv)
+CONFIDENCES = LogoConfidence.getConfindences()
 
 #####Starting Code#####
 
@@ -105,8 +104,9 @@ LogoConfidence.getRegionsPYAUTOGUI(APPLICATION_POSITION)
 #debug regions with CV and PYAuto
 LogoConfidence.debugMyRegions(regions,regionsPYAUTOGUI,ImageGrab.grab(bbox=regionTVApplicationFullScreenshot),pyautogui)
 
-currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CONFIDENCE,initialState =\
-LogoConfidence.getExpectedLogoRegion(regions,regionsPYAUTOGUI,ImageGrab.grab(bbox=regionTVApplicationFullScreenshot),LOGO_COLLECTION,cv,np)
+#decide for region
+currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,initialState\
+=LogoConfidence.getExpectedLogoRegion(regions[0],regionsPYAUTOGUI[0],LOGO_COLLECTION[0],CONFIDENCES[0],regions,regionsPYAUTOGUI,ImageGrab.grab(bbox=regionTVApplicationFullScreenshot),LOGO_COLLECTION,cv,np)
 
 if initialState:
     LOGO_GEFUNDEN=1
@@ -132,7 +132,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         global decoded
         #decoded = numpy.frombuffer(in_data, dtype=numpy.float)
         decoded = np.frombuffer(in_data, dtype=np.short).astype(float)
-        rms = audioop.rms(in_data, WIDTH) / 32767
+        RMS = audioop.rms(in_data, WIDTH) / 32767
         return in_data, pyaudio.paContinue
     stream = p.open(format=p.get_format_from_width(WIDTH),
                     input_device_index=DEVICE,
@@ -151,6 +151,9 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         ZCR = (np.where(np.sign(decoded[:-1]) != np.sign(decoded[1:]))[0] + 1).size
         MFCC = (librosa.feature.mfcc(y=np.array(decoded), sr=RATE)).std()
         if RMS!=0 : DB=20*log10(RMS)  
+
+        # print(RMS)
+        # print(DB)
 
         #Get Video Features#    
         imageApplicationVideoStream = ImageGrab.grab(bbox=regionTVApplicationFullScreenshot)
@@ -187,7 +190,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
                 CONSECUTIVE_COUNTER+=1
                 if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
-                    PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(CURRENT_PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
+                    PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(CURRENT_PICTURE_TV_LOGO,grayscale=True,confidence=CURRENT_CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
                     if PYAUTOGUI_LOCATION!=None:
                         STATE = "Programm"
                         LOGO_GEFUNDEN = 1
@@ -199,7 +202,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             elif not logoIndicationBooleanSQDIFF and not logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==1 and not BRIGHTNESS_BOOLEAN:
                     CONSECUTIVE_COUNTER+=1
                     if CONSECUTIVE_COUNTER>=CONSECUTIVE_FRAMES_FOR_SWITCHING:
-                        PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(CURRENT_PICTURE_TV_LOGO,grayscale=True,confidence=CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
+                        PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(CURRENT_PICTURE_TV_LOGO,grayscale=True,confidence=CURRENT_CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
                         #Confirmed that Logo is not visible
                         if  not(logoIndicationBooleanCCOEFF or logoIndicationBooleanSQDIFF) and PYAUTOGUI_LOCATION==None:
                             STATE = "Werbung"
@@ -210,21 +213,26 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                             CONSECUTIVE_COUNTER = 0
 
             #Check other places for Logo when Werbung is activated
-            if COUNT_OF_ITERATIONS%LIMIT_CHECK_NEW_LOGO==0 and not (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF) and not BRIGHTNESS_BOOLEAN:
-                    currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CONFIDENCE,initialState\
-                    =LogoConfidence.getExpectedLogoRegion(regions,regionsPYAUTOGUI,imageApplicationVideoStream,LOGO_COLLECTION,cv,np)
+            if COUNT_OF_ITERATIONS%LIMIT_CHECK_NEW_LOGO==0 and not (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF) and not BRIGHTNESS_BOOLEAN and LOGO_GEFUNDEN==0:
+                    currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,initialState\
+                    =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,regions,regionsPYAUTOGUI,imageApplicationVideoStream,LOGO_COLLECTION,cv,np)
 
             if TempCurrentState!=LOGO_GEFUNDEN:
                 end = time.time()
                 print("time elapsed: "+str(end - start))
-                print(COUNT_OF_ITERATIONS)
+                print(COUNT_OF_ITERATIONS/(end-start))
+                print()
                 print("In den Status "+STATE+" gewechselt")
-                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),"PROGRAMM"]
+                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE+" Grenze"]
+                print(list_data)
                 writer_object.writerow(list_data) 
                 imageExpectedLogo.save("screenshots/"+STATE+str(COUNT_OF_ITERATIONS)+".png")
                 #Reset Counters
                 CONSECUTIVE_COUNTER = 0
                 CONSECUTIVE_FRAME_COOLDOWN_COUNTER = CONSECUTIVE_COOLDOWN
+            elif (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and STATE=="Programm") or (not logoIndicationBooleanCCOEFF and not logoIndicationBooleanSQDIFF and STATE=="Werbung"):
+                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE+" Grenze"]
+
         else:
             CONSECUTIVE_FRAME_COOLDOWN_COUNTER-=1
             

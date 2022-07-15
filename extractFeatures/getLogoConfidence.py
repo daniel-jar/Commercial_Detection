@@ -41,6 +41,9 @@ def getRegionNames():
 def getRegionIndexes():
     return UPPER,LOWER,NEWSTIME,WIDER
 
+def getConfindences():
+    return CONFIDENCES
+
 def debugMyRegions(regions,regionsPYAUTOGUI,imageApplicationVideoStream,pyautogui):
     for i in range(len(regions)):
         print("Taking Screenshot for Region: "+REGION_NAMES[i])
@@ -60,33 +63,30 @@ def getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,
         logoIndicationBooleanCCOEFF = (resTM_CCOEFF_NORMED>=CCOEFF_EDGE) and (resTM_SQDIFF_NORMED!=SQDIFF_LIMIT)
         if FOUND_LOGO_LOCATION!=None:
             imageExpectedLogo.save(FOUND_LOGO_LOCATION)
-        # print(resTM_CCOEFF_NORMED)
-        # print(resTM_SQDIFF_NORMED)
         return logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo
 
 
-def getExpectedLogoRegion(regions,regionsPYAUTOGUI,imageApplicationVideoStream,LOGO_COLLECTION,cv,np):
+def getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,regions,regionsPYAUTOGUI,imageApplicationVideoStream,LOGO_COLLECTION,cv,np):
     for i in range(len(regions)):
-        print("Checking Logo in Other Region "+REGION_NAMES[i])
-        selectedRegion = regions[i]
-        currentSelectedExpectedRegion=regions[i]
-        currentSelectedExpectedRegionPYAUTOGUI=regionsPYAUTOGUI[i]
-        CURRENT_PICTURE_TV_LOGO=LOGO_COLLECTION[i]
-        CONFIDENCE=CONFIDENCES[i]
+        #print("Checking Logo in Other Region "+REGION_NAMES[i])
+        newSelectedExpectedRegion=regions[i]
+        newSelectedExpectedRegionPYAUTOGUI=regionsPYAUTOGUI[i]
+        NEW_PICTURE_TV_LOGO=LOGO_COLLECTION[i]
+        NEW_CONFIDENCE=CONFIDENCES[i]
         logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
-         = getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,CURRENT_PICTURE_TV_LOGO,cv,np,None)
+         = getLogoConfidence(newSelectedExpectedRegion,imageApplicationVideoStream,NEW_PICTURE_TV_LOGO,cv,np,None)
         if  (logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
-            print("Stopping Logo Check")
+            #print("Stopping Logo Check found Logo for Region: "+REGION_NAMES[i])
             break
-        else:
-            #Use Upper as Default
-            selectedRegion = regions[UPPER]
-            currentSelectedExpectedRegion=regions[UPPER]
-            currentSelectedExpectedRegionPYAUTOGUI=regionsPYAUTOGUI[UPPER]
-            CURRENT_PICTURE_TV_LOGO=LOGO_COLLECTION[UPPER]
-            CONFIDENCE=CONFIDENCES[UPPER]
+        
+    if  not (logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
+        print("Use current per default")
+        newSelectedExpectedRegion=currentSelectedExpectedRegion
+        newSelectedExpectedRegionPYAUTOGUI=currentSelectedExpectedRegionPYAUTOGUI
+        NEW_PICTURE_TV_LOGO=CURRENT_PICTURE_TV_LOGO
+        NEW_CONFIDENCE=CURRENT_CONFIDENCE
 
-    return currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CONFIDENCE,(logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF) 
+    return newSelectedExpectedRegion,newSelectedExpectedRegionPYAUTOGUI,NEW_PICTURE_TV_LOGO,NEW_CONFIDENCE,(logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF) 
 
 def getRegions(WIDTH):
     #Calculate Region of proposed Logo
