@@ -1,3 +1,4 @@
+from logging import currentframe
 from regex import R
 
 
@@ -31,6 +32,13 @@ def lucas_kanade_method_mvl(new_frame,prev_frame,cv2,np):
 
         diffs = good_new - good_old
         return [np.sum(diffs),np.sum(np.absolute(diffs)).max()]
-    except:
+    except Exception as e: # work on python 3.x:
         print("mvl error")
+        f = open("logmvl.txt", "a")
+        f.write(str(e)+"\n")
+        f.write(str(prev_frame)+"\n")
+        f.write(str(new_frame)+"\n")
+        f.write(str(old_gray)+"\n")
+        f.write(str(frame_gray)+"\n")
+        f.close()
         return [0.0037703,0.0037703]
