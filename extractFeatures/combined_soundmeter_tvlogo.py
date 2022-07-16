@@ -74,9 +74,16 @@ BRIGHTNESS_EDGE = 190
 BRIGHTNESS_LIMIT = 240
 BRIGHTNESS_BOOLEAN= False
 CONSECUTIVE_COOLDOWN = 20
-CONSECUTIVE_FRAMES_FOR_SWITCHING = 5
+CONSECUTIVE_FRAMES_FOR_SWITCHING = 10
 
-FILEPATH_DATASET="dataset\logoDetection1.csv"
+
+DATE = cd.run()
+DATASET_DIR = "data/"+DATE+"/collectedData/"
+SCREENSHOT_DIR = "data/"+DATE+"/screenshots/"
+FILEPATH_DATASET=DATASET_DIR+"logoDetection.csv"
+
+os.makedirs(DATASET_DIR)
+os.makedirs(SCREENSHOT_DIR)
 LOGO_COLLECTION = LogoConfidence.getLogos(cv)
 CONFIDENCES = LogoConfidence.getConfindences()
 
@@ -230,12 +237,13 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
                 list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE+" Grenze"]
                 print(list_data)
                 writer_object.writerow(list_data) 
-                imageExpectedLogo.save("screenshots/"+STATE+str(COUNT_OF_ITERATIONS)+".png")
+                imageExpectedLogo.save(SCREENSHOT_DIR+STATE+str(COUNT_OF_ITERATIONS)+".png")
                 #Reset Counters
                 CONSECUTIVE_COUNTER = 0
                 CONSECUTIVE_FRAME_COOLDOWN_COUNTER = CONSECUTIVE_COOLDOWN
             elif (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and STATE=="Programm") or (not logoIndicationBooleanCCOEFF and not logoIndicationBooleanSQDIFF and STATE=="Werbung"):
-                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE+" Grenze"]
+                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE]
+                writer_object.writerow(list_data) 
 
         else:
             CONSECUTIVE_FRAME_COOLDOWN_COUNTER-=1

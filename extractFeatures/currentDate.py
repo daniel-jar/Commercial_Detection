@@ -10,3 +10,7 @@ def time():
 def day():
     dateTimeObj = datetime.now()
     return dateTimeObj.weekday()
+
+def run():
+    dateTimeObj = datetime.now()
+    return dateTimeObj.strftime("%D_%m_%Y_%H%M").replace("/","_")
