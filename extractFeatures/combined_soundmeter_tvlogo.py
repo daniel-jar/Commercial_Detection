@@ -70,8 +70,8 @@ PYAUTOGUI_LOCATION = None
 
 #EDGE Values
 LIMIT_CHECK_NEW_LOGO = 50
-BRIGHTNESS_EDGE = 190
-BRIGHTNESS_LIMIT = 240
+#BRIGHTNESS_EDGE = 190
+BRIGHTNESS_LIMIT = 230
 BRIGHTNESS_BOOLEAN= False
 CONSECUTIVE_COOLDOWN = 20
 CONSECUTIVE_FRAMES_FOR_SWITCHING = 10
@@ -115,12 +115,15 @@ LogoConfidence.debugMyRegions(regions,regionsPYAUTOGUI,ImageGrab.grab(bbox=regio
 currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,initialState\
 =LogoConfidence.getExpectedLogoRegion(regions[0],regionsPYAUTOGUI[0],LOGO_COLLECTION[0],CONFIDENCES[0],regions,regionsPYAUTOGUI,ImageGrab.grab(bbox=regionTVApplicationFullScreenshot),LOGO_COLLECTION,cv,np)
 
+PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(CURRENT_PICTURE_TV_LOGO,grayscale=True,confidence=CURRENT_CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
+print(currentSelectedExpectedRegionPYAUTOGUI)
+
 if initialState:
     LOGO_GEFUNDEN=1
     STATE="Programm"
 else:
     LOGO_GEFUNDEN = 0
-    STATE = "WERBUNG"
+    STATE = "Wahrscheinlich Werbung"
 
 print("Initialer Status lautet: "+STATE)
 
@@ -184,11 +187,23 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         logoIndicationBooleanCCOEFF, logoIndicationBooleanSQDIFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
         = LogoConfidence.getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,CURRENT_PICTURE_TV_LOGO,cv,np,None)
 
+        imageApplicationVideoStream.save("TEST.png")
+
         #get Brightness for confidence indicator
         brightness = (ImageStat.Stat(imageExpectedLogo)).mean[0]
 
         #set to true if logo to bright
-        BRIGHTNESS_BOOLEAN = (resTM_CCOEFF_NORMED > 0.05 and brightness>BRIGHTNESS_EDGE) or brightness>BRIGHTNESS_LIMIT
+        #je eher ein logo gefunden wird desto kleiner wird das Brightness Limit
+        reduceBrightnessLimitCCOEFF = resTM_CCOEFF_NORMED*100
+        reduceBrightnessLimitSQDIFF = (1-resTM_SQDIFF_NORMED)*100
+        newBrightnessLimit = BRIGHTNESS_LIMIT-reduceBrightnessLimitCCOEFF-reduceBrightnessLimitSQDIFF
+        BRIGHTNESS_BOOLEAN = brightness>(newBrightnessLimit)
+        # print("Helligkeit: "+str(brightness)+" Limit: "+str(newBrightnessLimit))
+        # print(newBrightnessLimit)
+        # if not BRIGHTNESS_BOOLEAN:
+        #     print("Das Bild ist nicht so Hell und es ist wahrschinelich auch kein Logo Drin ich gehe von Werbung aus")
+        # else:
+        #     print("Das Bild hell und es ist vielleicht auch ein Logo drin")
 
         #check if we switch Status
         TempCurrentState = LOGO_GEFUNDEN
@@ -227,26 +242,25 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             if COUNT_OF_ITERATIONS%LIMIT_CHECK_NEW_LOGO==0 and not (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF) and not BRIGHTNESS_BOOLEAN and LOGO_GEFUNDEN==0:
                     currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,initialState\
                     =LogoConfidence.getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,regions,regionsPYAUTOGUI,imageApplicationVideoStream,LOGO_COLLECTION,cv,np)
-
-            if TempCurrentState!=LOGO_GEFUNDEN:
-                end = time.time()
-                print("time elapsed: "+str(end - start))
-                print(COUNT_OF_ITERATIONS/(end-start))
-                print()
-                print("In den Status "+STATE+" gewechselt")
-                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE+" Grenze"]
-                print(list_data)
-                writer_object.writerow(list_data) 
-                imageExpectedLogo.save(SCREENSHOT_DIR+STATE+str(COUNT_OF_ITERATIONS)+".png")
-                #Reset Counters
-                CONSECUTIVE_COUNTER = 0
-                CONSECUTIVE_FRAME_COOLDOWN_COUNTER = CONSECUTIVE_COOLDOWN
-            elif (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and STATE=="Programm") or (not logoIndicationBooleanCCOEFF and not logoIndicationBooleanSQDIFF and STATE=="Werbung"):
-                list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE]
-                writer_object.writerow(list_data) 
-
         else:
             CONSECUTIVE_FRAME_COOLDOWN_COUNTER-=1
+
+        if TempCurrentState!=LOGO_GEFUNDEN:
+            end = time.time()
+            print("time elapsed: "+str(end - start))
+            print(COUNT_OF_ITERATIONS/(end-start))
+            print()
+            print("In den Status "+STATE+" gewechselt")
+            list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE+" Grenze"]
+            print(list_data)
+            writer_object.writerow(list_data) 
+            imageExpectedLogo.save(SCREENSHOT_DIR+STATE+str(COUNT_OF_ITERATIONS)+".png")
+            #Reset Counters
+            CONSECUTIVE_COUNTER = 0
+            CONSECUTIVE_FRAME_COOLDOWN_COUNTER = CONSECUTIVE_COOLDOWN
+        elif (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and STATE=="Programm") or (not logoIndicationBooleanCCOEFF and not logoIndicationBooleanSQDIFF and STATE=="Werbung"):
+            list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE]
+            writer_object.writerow(list_data) 
             
         #print(COUNT_OF_ITERATIONS)
 

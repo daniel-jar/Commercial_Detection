@@ -13,4 +13,4 @@ def day():
 
 def run():
     dateTimeObj = datetime.now()
-    return dateTimeObj.strftime("%D_%m_%Y_%H%M").replace("/","_")
+    return dateTimeObj.strftime("%D_%m_%Y_%H%M%S").replace("/","_")
