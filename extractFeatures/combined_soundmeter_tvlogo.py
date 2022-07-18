@@ -73,8 +73,8 @@ LIMIT_CHECK_NEW_LOGO = 50
 #BRIGHTNESS_EDGE = 190
 BRIGHTNESS_LIMIT = 230
 BRIGHTNESS_BOOLEAN= False
-CONSECUTIVE_COOLDOWN = 20
-CONSECUTIVE_FRAMES_FOR_SWITCHING = 10
+CONSECUTIVE_COOLDOWN = 50
+CONSECUTIVE_FRAMES_FOR_SWITCHING = 5
 
 
 DATE = cd.run()
@@ -115,6 +115,9 @@ LogoConfidence.debugMyRegions(regions,regionsPYAUTOGUI,ImageGrab.grab(bbox=regio
 currentSelectedExpectedRegion,currentSelectedExpectedRegionPYAUTOGUI,CURRENT_PICTURE_TV_LOGO,CURRENT_CONFIDENCE,initialState\
 =LogoConfidence.getExpectedLogoRegion(regions[0],regionsPYAUTOGUI[0],LOGO_COLLECTION[0],CONFIDENCES[0],regions,regionsPYAUTOGUI,ImageGrab.grab(bbox=regionTVApplicationFullScreenshot),LOGO_COLLECTION,cv,np)
 
+ImageGrab.grab(bbox=regionTVApplicationFullScreenshot).save("debugging/lastFullScreen.png")
+
+#dont know for now why i do this 
 PYAUTOGUI_LOCATION=pyautogui.locateOnScreen(CURRENT_PICTURE_TV_LOGO,grayscale=True,confidence=CURRENT_CONFIDENCE, region=currentSelectedExpectedRegionPYAUTOGUI)
 print(currentSelectedExpectedRegionPYAUTOGUI)
 
@@ -187,7 +190,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         logoIndicationBooleanCCOEFF, logoIndicationBooleanSQDIFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
         = LogoConfidence.getLogoConfidence(currentSelectedExpectedRegion,imageApplicationVideoStream,CURRENT_PICTURE_TV_LOGO,cv,np,None)
 
-        imageApplicationVideoStream.save("TEST.png")
+
 
         #get Brightness for confidence indicator
         brightness = (ImageStat.Stat(imageExpectedLogo)).mean[0]

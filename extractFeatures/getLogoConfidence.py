@@ -12,6 +12,9 @@ SIZE_OF_EXPECTED_LOGO_Y = 48
 #LOGO Lower than usual
 EXPECTED_LOWER_MARGIN_Y = 64
 
+#EXPECTED BLACKBAR OFFSET
+EXPECTED_BLACKBAR_OFFSET = 26
+
 #LOGO Wider
 EXPECTED_WIDER_LEFT_MARGIN_X = -23
 EXPECTED_WIDER_LEFT_MARGIN_Y = 4
@@ -82,7 +85,7 @@ def getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedR
         
     if  not (logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
         print("Search for black bars")
-        expectedMarginThroughBlackBar = detectBlackBorder(np.array(imageApplicationVideoStream,dtype="uint8"))-26
+        expectedMarginThroughBlackBar = detectBlackBorder(np.array(imageApplicationVideoStream,dtype="uint8"))-EXPECTED_BLACKBAR_OFFSET
         print("Detected Count of Black Rows: "+str(expectedMarginThroughBlackBar))
         newSelectedExpectedRegion=regions[UPPER]
         newSelectedExpectedRegionPYAUTOGUI=regionsPYAUTOGUI[UPPER]
@@ -94,10 +97,12 @@ def getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedR
 
         newSelectedExpectedRegion[1]=newSelectedExpectedRegion[1]+expectedMarginThroughBlackBar
         newSelectedExpectedRegion[3]=newSelectedExpectedRegion[3]+expectedMarginThroughBlackBar
-        newSelectedExpectedRegionPYAUTOGUI=newSelectedExpectedRegionPYAUTOGUI[1]+expectedMarginThroughBlackBar
+        newSelectedExpectedRegionPYAUTOGUI[1]=newSelectedExpectedRegionPYAUTOGUI[1]+expectedMarginThroughBlackBar
 
         logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
          = getLogoConfidence(newSelectedExpectedRegion,imageApplicationVideoStream,NEW_PICTURE_TV_LOGO,cv,np,None)
+
+        imageExpectedLogo.save("debugging/blackbarOffset.png")
 
         if  not (logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
             print("Use current per default")
@@ -105,10 +110,8 @@ def getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedR
             newSelectedExpectedRegionPYAUTOGUI=currentSelectedExpectedRegionPYAUTOGUI
             NEW_PICTURE_TV_LOGO=CURRENT_PICTURE_TV_LOGO
             NEW_CONFIDENCE=CURRENT_CONFIDENCE
-            imageExpectedLogo.save("blackbar.png")
         else:
             print("Black bar detected and found")
-            imageExpectedLogo.save("blackbar.png")
             
 
     return newSelectedExpectedRegion,newSelectedExpectedRegionPYAUTOGUI,NEW_PICTURE_TV_LOGO,NEW_CONFIDENCE,(logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF) 
