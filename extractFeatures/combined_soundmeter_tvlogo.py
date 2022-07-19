@@ -48,6 +48,7 @@ RMS = 0
 DB = 0
 ZCR = 0
 
+
 #Application Relative Position
 APPLICATION_POSITION = [0,0,0,0]
 
@@ -59,6 +60,7 @@ TV_APPLICATION_NAME = "Hauppauge WinTV"
 COUNT_OF_ITERATIONS = 0
 CONSECUTIVE_COUNTER = 0
 CONSECUTIVE_FRAME_COOLDOWN_COUNTER = 0
+COUNTER_UNEINDEUTIG=0
 
 #prevFrame for Visuelle Merkmale
 PREV_FRAME = []
@@ -254,6 +256,7 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             print(COUNT_OF_ITERATIONS/(end-start))
             print()
             print("In den Status "+STATE+" gewechselt")
+            print("Bisher uneindeutige Frames "+str(COUNTER_UNEINDEUTIG))
             list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE+" Grenze"]
             print(list_data)
             writer_object.writerow(list_data) 
@@ -261,9 +264,11 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
             #Reset Counters
             CONSECUTIVE_COUNTER = 0
             CONSECUTIVE_FRAME_COOLDOWN_COUNTER = CONSECUTIVE_COOLDOWN
-        elif (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and STATE=="Programm") or (not logoIndicationBooleanCCOEFF and not logoIndicationBooleanSQDIFF and STATE=="Werbung"):
+        elif (logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and STATE=="Programm") or (not (logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF) and STATE=="Werbung"):
             list_data=[COUNT_OF_ITERATIONS,logoIndicationBooleanSQDIFF,resTM_SQDIFF_NORMED,logoIndicationBooleanCCOEFF,resTM_CCOEFF_NORMED,ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,BRIGHTNESS_BOOLEAN,brightness,cd.day(),cd.time(),STATE]
             writer_object.writerow(list_data) 
+        else:
+            COUNTER_UNEINDEUTIG+=1
             
         #print(COUNT_OF_ITERATIONS)
 

@@ -1,8 +1,9 @@
-SQDIFF_EDGE = 0.6 #solange sqdiff kleiner als x ist ist es wsl. ein logo
+SQDIFF_EDGE = 0.65 #solange sqdiff kleiner als x ist ist es wsl. ein logo
 CCOEFF_CONFIDENT = 0.9 #solange ccoeff größer als x ist ist es definitiv ein logo
 CCOEFF_EDGE = 0.5   #solange ccoeff größer als x ist ist es wsl ein logo
 SQDIFF_LIMIT = 1    #solange sqdiff x ist ist es definitiv kein logo
-
+# Vorschlag Programm in Werbung andere Werte 
+# Wie von Werbung in Programm
 #LOGO Upper
 EXPECTED_MARGIN_X = 160
 EXPECTED_MARGIN_Y = 70
@@ -43,7 +44,7 @@ BOTTOM_BORDER_MARGIN = 89
 
 UPPER,LOWER,NEWSTIME,WIDER,LEFTER,SLIGHTLY_LEFTER = 0,1,2,3,4,5
 REGION_NAMES=["UPPER","LOWER","NEWSTIME","WIDER","LEFTER","SLIGHTLYLOWER"]
-CONFIDENCES = [0.3,0.3,0.7,0.3,0.3,0.3]
+CONFIDENCES = [0.25,0.25,0.7,0.25,0.25,0.25]
 
 def getConfindences():
     return CONFIDENCES
