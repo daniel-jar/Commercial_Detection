@@ -57,7 +57,7 @@ def setTextAbovePlot(graph,values,plt):
                 ha='center',
                 weight='bold')
         i+=1
-def createSumWerbungProgramHistograms():
+def createSumWerbungProgramHistograms(dfProgramm,dfWerbung):
     fig, axes = plt.subplots(len(columnArray)//4, 4, figsize=(12, 48))
     i = 0
     for triaxis in axes:
@@ -129,7 +129,6 @@ def createCount():
     plt.ylabel("Anzahl der Datenpunkte")
     plt.title("Anzahl der Datenpunkte per Status")
     plt.show()
-
 def createPercentageWerbungProgramHistograms():
     fig, axes = plt.subplots(len(columnArray)//4, 4, figsize=(12, 48))
     i = 0
@@ -169,10 +168,27 @@ def createPercentageWerbungProgramHistograms():
 
 
 
-#createCount()
+createCount()
 #createSumHistograms()
-#createSumWerbungProgramHistograms()
-createPercentageWerbungProgramHistograms()
+createSumWerbungProgramHistograms(dfProgramm,dfWerbung)
+#CreatePercentageWerbungProgramHistograms()
+
+#drop null values
+specificDataFrame.dropna(subset=['SIFT RATIO'], inplace=True)
+
+specificDataFrame.describe().to_csv("my_description.csv")
+#drop everything higher than 8000
+
+specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'].between(-1000, 1000, inclusive=False)]  
+specificDataFrame = specificDataFrame[specificDataFrame['RMS'].between(0, 0.2, inclusive=False)]  
+specificDataFrame = specificDataFrame[specificDataFrame['SIFT RATIO'].between(0, 1, inclusive=False)]  
+specificDataFrame =specificDataFrame[specificDataFrame['MVL ABS'].between(0, 2500, inclusive=False)] 
+print(specificDataFrame.describe())
+dfWerbung = specificDataFrame[df['LABEL'] == "Werbung"]
+dfProgramm = specificDataFrame[df['LABEL'] == "Programm"]
+    
+createSumWerbungProgramHistograms(dfProgramm,dfWerbung)
+
 
 
 
