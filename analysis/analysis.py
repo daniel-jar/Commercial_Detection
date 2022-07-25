@@ -234,7 +234,7 @@ dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
 ## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES)
-
+createHeatmap(specificDataFrame.corr())
 createScatterTime(dfWerbung,dfProgramm,'Zeit','ECR_RATIO')
 createScatterTimeY(dfWerbung,dfProgramm,'ECR_RATIO','Zeit')
 createScatter(dfWerbung,dfProgramm,'ECR_RATIO','FARBWECHSEL RATIO')
