@@ -12,6 +12,7 @@ import seaborn as sns
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 import matplotlib.patches as mpatches
+from os import listdir
 
 #graveyard
 #df["Zeit"] = pd.to_datetime(df["Zeit"]).dt.time
@@ -39,20 +40,18 @@ import matplotlib.patches as mpatches
 #                 i = i+1
         
 #     plt.show()
+def find_csv_filenames( path_to_dir, suffix=".csv" ):
+    filenames = listdir(path_to_dir)
+    return [ PATH_DATA_TO_BE_JOINED+"\\"+filename for filename in filenames if filename.endswith( suffix ) ]
 
-
-
-PATH_DATA_TO_BE_JOINED = "dataToBeJoined/"
-COLOR_FOR_WERBUNG = "orange"
-COLOR_FOR_PROGRAMM ="cornflowerblue"
-STATUSES=[["Programm",COLOR_FOR_PROGRAMM],["Werbung",COLOR_FOR_WERBUNG]]
-
-df = pd.read_csv('analysis/logoDetection.csv')
-df["Zeit"]=df["Zeit"].astype("datetime64[ns]")
-columnArray=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
-specificDataFrame = df[columnArray]
-
-
+def returnJoinedDataFrame(files):
+    # list of merged files returned
+    files = glob.glob(files)
+    print("Result CSV after joining all CSV files at a particular location...");
+    # joining files with concat and read_csv
+    df = pd.concat(map(pd.read_csv, files), ignore_index=True)
+    print(df)
+    return df
 
 def returnJoinedDataFrame(path):
     #join data paths
@@ -65,6 +64,17 @@ def returnJoinedDataFrame(path):
     df = pd.concat(map(pd.read_csv, files), ignore_index=True)
     print(df)
     return df
+
+PATH_DATA_TO_BE_JOINED = os.getcwd()+"\\analysis\\input"
+COLOR_FOR_WERBUNG = "orange"
+COLOR_FOR_PROGRAMM ="cornflowerblue"
+STATUSES=[["Programm",COLOR_FOR_PROGRAMM],["Werbung",COLOR_FOR_WERBUNG]]
+
+#files = find_csv_filenames(PATH_DATA_TO_BE_JOINED, suffix=".csv" )
+df = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED)
+df["Zeit"]=df["Zeit"].astype("datetime64[ns]")
+columnArray=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
+specificDataFrame = df[columnArray]
 
 def setTextinPlot(graph,values):
     i=0
@@ -232,15 +242,29 @@ specificDataFrame = removeOutliers(specificDataFrame)
 dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
+
+
 ## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES)
-createHeatmap(specificDataFrame.corr())
-createScatterTime(dfWerbung,dfProgramm,'Zeit','ECR_RATIO')
-createScatterTimeY(dfWerbung,dfProgramm,'ECR_RATIO','Zeit')
-createScatter(dfWerbung,dfProgramm,'ECR_RATIO','FARBWECHSEL RATIO')
-createScatter(dfWerbung,dfProgramm,'SIFT RATIO','FARBWECHSEL RATIO')
+#createHeatMaps
+#createDescriptions
+
+
+#createHeatmap(specificDataFrame.corr())
 #createHeatmap(dfWerbung.corr())
 #createHeatmap(dfProgramm.corr())
+#createScatterTime(dfWerbung,dfProgramm,'Zeit','ECR_RATIO')
+#createScatterTimeY(dfWerbung,dfProgramm,'ECR_RATIO','Zeit')
+#createScatter(dfWerbung,dfProgramm,'ECR_RATIO','FARBWECHSEL RATIO')
+#createScatter(dfWerbung,dfProgramm,'SIFT RATIO','FARBWECHSEL RATIO')
+#createScatter(dfWerbung,dfProgramm,'MVL SUM','MVL ABS')
+
+dfWerbung.describe().to_csv("analysis\output\WerbungDescribe.csv")
+dfProgramm.describe().to_csv("analysis\output\ProgrammDescribe.csv")
+
+
+
+
 
 
 
