@@ -20,6 +20,26 @@ import matplotlib.patches as mpatches
 # dfProgramm = specificDataFrame[df['LABEL'] == "Programm"]
 #columnArray=[5,6,7,8,9,10,11,12,13,16,17]
 #print(os.getcwd())
+# #def createSumHistograms():
+#     fig, axes = plt.subplots(len(columnArray)//3, 4, figsize=(12, 48))
+
+#     i = 0
+#     for triaxis in axes:
+#         for axis in triaxis:
+#             if i!=11:
+#                 if i==10:
+#                     minute_locator = mdates.MinuteLocator(interval=240)
+#                     hour_locator = mdates.HourLocator(interval=6)
+#                     axis.xaxis.set_major_locator(minute_locator)
+#                     myFmt = mdates.DateFormatter('%HH')
+#                     axis.xaxis.set_major_formatter(myFmt)
+#                     specificDataFrame.hist(column = specificDataFrame.columns[i], bins = 100, ax=axis) # Locator for major axis only.)
+#                 else:
+#                     specificDataFrame.hist(column = specificDataFrame.columns[i], bins = 100, ax=axis)
+#                 i = i+1
+        
+#     plt.show()
+
 
 
 PATH_DATA_TO_BE_JOINED = "dataToBeJoined/"
@@ -71,26 +91,6 @@ def setTextAbovePlot(graph,values):
                 ha='center',
                 weight='normal')
         i+=1
-
-def createSumHistograms():
-    fig, axes = plt.subplots(len(columnArray)//3, 4, figsize=(12, 48))
-
-    i = 0
-    for triaxis in axes:
-        for axis in triaxis:
-            if i!=11:
-                if i==10:
-                    minute_locator = mdates.MinuteLocator(interval=240)
-                    hour_locator = mdates.HourLocator(interval=6)
-                    axis.xaxis.set_major_locator(minute_locator)
-                    myFmt = mdates.DateFormatter('%HH')
-                    axis.xaxis.set_major_formatter(myFmt)
-                    specificDataFrame.hist(column = specificDataFrame.columns[i], bins = 100, ax=axis) # Locator for major axis only.)
-                else:
-                    specificDataFrame.hist(column = specificDataFrame.columns[i], bins = 100, ax=axis)
-                i = i+1
-        
-    plt.show()
 
 def createCount(countDatapointsProgramm,countDatapointsWerbung):
     #df.replace(to_replace ="Boston Celtics", value ="Omega Warrior")
@@ -170,12 +170,61 @@ def removeOutliers(specificDataFrame):
     print(specificDataFrame.describe())
     return specificDataFrame
 
-def createScatter(dfWerbung,dfProgramm):
-    plt.scatter(dfWerbung['RMS'],dfWerbung['DB'],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
-    plt.scatter(dfProgramm['RMS'],dfProgramm['DB'],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
-    plt.legend()
+def createScatterTime(dfWerbung,dfProgramm,columnName1,columnName2):
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.xaxis.set_major_locator(mdates.MinuteLocator(interval=60))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H'))
+    ax.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
+    ax.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
+    fig.autofmt_xdate()
+    # minute_locator = mdates.MinuteLocator(interval=240)
+    # hour_locator = mdates.HourLocator(interval=6)
+    # axis.xaxis.set_major_locator(minute_locator)
+    # myFmt = mdates.DateFormatter('%HH')
+    # axis.xaxis.set_major_formatter(myFmt)
+    # plt.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
+    # plt.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
+    ax.legend()
     plt.show()
 
+def createScatterTimeY(dfWerbung,dfProgramm,columnName1,columnName2):
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.yaxis.set_major_locator(mdates.MinuteLocator(interval=60))
+    ax.yaxis.set_major_formatter(mdates.DateFormatter('%H'))
+    ax.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
+    ax.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
+    # minute_locator = mdates.MinuteLocator(interval=240)
+    # hour_locator = mdates.HourLocator(interval=6)
+    # axis.xaxis.set_major_locator(minute_locator)
+    # myFmt = mdates.DateFormatter('%HH')
+    # axis.xaxis.set_major_formatter(myFmt)
+    # plt.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
+    # plt.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
+    ax.legend()
+    plt.show()
+
+def createScatter(dfWerbung,dfProgramm,columnName1,columnName2):
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
+    ax.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
+    # minute_locator = mdates.MinuteLocator(interval=240)
+    # hour_locator = mdates.HourLocator(interval=6)
+    # axis.xaxis.set_major_locator(minute_locator)
+    # myFmt = mdates.DateFormatter('%HH')
+    # axis.xaxis.set_major_formatter(myFmt)
+    # plt.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
+    # plt.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
+    ax.legend()
+    plt.show()
 ## REMOVE OUTLIERS AND FALSE NUMBERS ## 
 specificDataFrame = removeOutliers(specificDataFrame)
 
@@ -186,6 +235,10 @@ dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 ## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES)
 
+createScatterTime(dfWerbung,dfProgramm,'Zeit','ECR_RATIO')
+createScatterTimeY(dfWerbung,dfProgramm,'ECR_RATIO','Zeit')
+createScatter(dfWerbung,dfProgramm,'ECR_RATIO','FARBWECHSEL RATIO')
+createScatter(dfWerbung,dfProgramm,'SIFT RATIO','FARBWECHSEL RATIO')
 #createHeatmap(dfWerbung.corr())
 #createHeatmap(dfProgramm.corr())
 
