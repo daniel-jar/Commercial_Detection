@@ -9,6 +9,9 @@ import time
 import matplotlib.dates as mdates
 from matplotlib.ticker import PercentFormatter
 import seaborn as sns
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+import matplotlib.patches as mpatches
 
 #graveyard
 #df["Zeit"] = pd.to_datetime(df["Zeit"]).dt.time
@@ -20,8 +23,8 @@ import seaborn as sns
 
 
 PATH_DATA_TO_BE_JOINED = "dataToBeJoined/"
-COLOR_FOR_WERBUNG = "tab:orange"
-COLOR_FOR_PROGRAMM ="tab:blue"
+COLOR_FOR_WERBUNG = "orange"
+COLOR_FOR_PROGRAMM ="cornflowerblue"
 STATUSES=[["Programm",COLOR_FOR_PROGRAMM],["Werbung",COLOR_FOR_WERBUNG]]
 
 df = pd.read_csv('analysis/logoDetection.csv')
@@ -43,7 +46,7 @@ def returnJoinedDataFrame(path):
     print(df)
     return df
 
-def setTextinPlot(graph,values,plt):
+def setTextinPlot(graph,values):
     i=0
     for p in graph:
         width = p.get_width()
@@ -51,12 +54,12 @@ def setTextinPlot(graph,values,plt):
         x, y = p.get_xy()
         plt.text(x+width/2,
                 y+height*1.01,
-                str(values[i])+'',
+                str(round(values[i],2))+'',
                 ha='center',
-                weight='bold')
+                weight='normal')
         i+=1
 
-def setTextAbovePlot(graph,values,plt):
+def setTextAbovePlot(graph,values):
     i=0
     for p in graph:
         width = p.get_width()
@@ -66,42 +69,8 @@ def setTextAbovePlot(graph,values,plt):
                 y+height*1.01,
                 str(values[i])+'',
                 ha='center',
-                weight='bold')
+                weight='normal')
         i+=1
-
-
-    fig, axes = plt.subplots(len(columnArray)//4, 4, figsize=(12, 48))
-    i = 0
-    for triaxis in axes:
-        for axis in triaxis:
-            if i!=11:
-                if i==10:
-                    minute_locator = mdates.MinuteLocator(interval=240)
-                    hour_locator = mdates.HourLocator(interval=6)
-                    axis.xaxis.set_major_locator(minute_locator)
-                    myFmt = mdates.DateFormatter('%HH')
-                    axis.xaxis.set_major_formatter(myFmt)
-                    dfProgramm.hist(column = dfProgramm.columns[i],color = COLOR_FOR_PROGRAMM, bins = 100, ax=axis) # Locator for major axis only.)
-                else:
-                    dfProgramm.hist(column = dfProgramm.columns[i],color = COLOR_FOR_PROGRAMM, bins = 100, ax=axis)
-                i = i+1
-
-    ##werbung
-    i = 0
-    for triaxis in axes:
-        for axis in triaxis:
-            if i!=11:
-                if i==10:
-                    minute_locator = mdates.MinuteLocator(interval=240)
-                    hour_locator = mdates.HourLocator(interval=6)
-                    axis.xaxis.set_major_locator(minute_locator)
-                    myFmt = mdates.DateFormatter('%HH')
-                    axis.xaxis.set_major_formatter(myFmt)
-                    dfWerbung.hist(column = dfWerbung.columns[i],color = COLOR_FOR_WERBUNG, bins = 100, ax=axis) # Locator for major axis only.)
-                else:
-                    dfWerbung.hist(column = dfWerbung.columns[i],color = COLOR_FOR_WERBUNG, bins = 100, ax=axis)
-                i = i+1
-    plt.show()
 
 def createSumHistograms():
     fig, axes = plt.subplots(len(columnArray)//3, 4, figsize=(12, 48))
@@ -120,25 +89,18 @@ def createSumHistograms():
                 else:
                     specificDataFrame.hist(column = specificDataFrame.columns[i], bins = 100, ax=axis)
                 i = i+1
+        
     plt.show()
 
-def createCount(dfWerbung,dfProgramm,STATUSES):
+def createCount(countDatapointsProgramm,countDatapointsWerbung):
     #df.replace(to_replace ="Boston Celtics", value ="Omega Warrior")
-    countDatapointsWerbung = len(dfWerbung)
-    countDatapointsProgramm = len(dfProgramm)
     sumDatenpunkte = countDatapointsWerbung+countDatapointsProgramm
     percentageWerbung = (countDatapointsWerbung/sumDatenpunkte)*100
     percentageProgramm = (countDatapointsProgramm/sumDatenpunkte)*100
-    AnzahlDerDatenPunkte = [countDatapointsWerbung,countDatapointsProgramm]
-    Status = [STATUSES[0][0],STATUSES[1][0]]
-    #plt.hist([dfWerbung['DB'], dfProgramm['DB']])
-    countPlot = plt.bar(Status,AnzahlDerDatenPunkte,color=[COLOR_FOR_WERBUNG, COLOR_FOR_PROGRAMM])
-    setTextAbovePlot(countPlot,[countDatapointsWerbung,countDatapointsProgramm],plt)
-    setTextinPlot(countPlot,[percentageWerbung,percentageProgramm],plt)
-    plt.xlabel("Status")    
-    plt.ylabel("Anzahl der Datenpunkte")
-    plt.title("Anzahl der Datenpunkte per Status")
-
+    AnzahlDerDatenPunkte = [countDatapointsProgramm,countDatapointsWerbung]
+    percentage = [percentageProgramm,percentageWerbung]
+    return [AnzahlDerDatenPunkte,percentage]
+   
 def createSumWerbungProgramHistograms(arrDf,STATUSES):
     fig, axes = plt.subplots(len(columnArray)//4, 4, figsize=(12, 48))
     countOfData = 0
@@ -155,11 +117,21 @@ def createSumWerbungProgramHistograms(arrDf,STATUSES):
                         axis.xaxis.set_major_formatter(myFmt)
                         specificDataFrame.hist(column = specificDataFrame.columns[counterForPlots],color = STATUSES[countOfData][1], bins = 100, ax=axis) # Locator for major axis only.)
                     elif counterForPlots < 11:
-                        specificDataFrame.hist(column = specificDataFrame.columns[counterForPlots],color = STATUSES[countOfData][1], bins = 100, ax=axis)
+                        if columnArray[counterForPlots]=="ECR_RATIO":
+                            specificDataFrame.hist(column = specificDataFrame.columns[counterForPlots],color = STATUSES[countOfData][1], bins = 100, ax=axis,label=x)
+                        else:
+                            specificDataFrame.hist(column = specificDataFrame.columns[counterForPlots],color = STATUSES[countOfData][1], bins = 100, ax=axis)
+
                     elif counterForPlots == 11 and countOfData==1:
-                        createCount(arrDf[0],arrDf[1],STATUSES)
+                        certainCounts = createCount(len(arrDf[0]),len(arrDf[1]))
+                        countPlot = plt.bar(["Programm","Werbung"],certainCounts[0],color=[COLOR_FOR_PROGRAMM, COLOR_FOR_WERBUNG])
+                        setTextAbovePlot(countPlot,[certainCounts[0][0],certainCounts[0][1]])
+                        setTextinPlot(countPlot,[certainCounts[1][0],certainCounts[1][1]])
+                        plt.title("Anzahl der Datenpunkte")
                     counterForPlots +=1
-        countOfData+=1
+        countOfData+=1  
+    fig.legend(loc='upper center')    
+    plt.show()
 
 def createHeatmap(heatmap):
     ##createHeatmap(specificDataFrame.corr())
@@ -171,12 +143,16 @@ def createHeatmap(heatmap):
 def removeOutliers(specificDataFrame):
     print("Outliers werden entfernt")
     print("Länge der Daten: "+str(len(specificDataFrame)))
+    specificDataFrame["LABEL"].replace(to_replace ="Programm Grenze",value ="Programm")
+    print("Programm Grenze in Programm verwandelt "+str(len(specificDataFrame)))
+    specificDataFrame["LABEL"].replace(to_replace ="Werbung Grenze",value ="Werbung")
+    print("Werbung Grenze in Werbung verwandelt "+str(len(specificDataFrame)))
     specificDataFrame.dropna(subset=['SIFT RATIO'])
     print("Leere Values in SIFT Ratio entfernt: "+str(len(specificDataFrame))) 
     specificDataFrame.drop(specificDataFrame[specificDataFrame['SIFT RATIO'] == 0.0037703].index)
     print("Error Values in SIFT Ratio Entfernt: "+str(len(specificDataFrame))) 
     specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL SUM'] == 0.0037703].index)
-    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'] == 0.0037703]
+    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'] != 0.0037703]
     print("Error Values in MVL Sum Entfernt: "+str(len(specificDataFrame))) 
     specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL ABS'] == 0.0037703].index)
     print("Error Values in MVL ABS Entfernt: "+str(len(specificDataFrame))) 
@@ -209,7 +185,10 @@ dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
 ## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES)
-plt.show()
+
+#createHeatmap(dfWerbung.corr())
+#createHeatmap(dfProgramm.corr())
+
 
 
 
