@@ -1,3 +1,4 @@
+from itertools import count
 from re import X
 from tkinter import Y
 from turtle import xcor
@@ -133,46 +134,14 @@ def removeOutliers(specificDataFrame):
     print(specificDataFrame.describe())
     return specificDataFrame
 
-
-
-
-    fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
-  
-    ax.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
-    ax.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
-    # minute_locator = mdates.MinuteLocator(interval=240)
-    # hour_locator = mdates.HourLocator(interval=6)
-    # axis.xaxis.set_major_locator(minute_locator)
-    # myFmt = mdates.DateFormatter('%HH')
-    # axis.xaxis.set_major_formatter(myFmt)
-    # plt.scatter(dfWerbung[columnName1],dfWerbung[columnName2],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=0.5,s=4)
-    # plt.scatter(dfProgramm[columnName1],dfProgramm[columnName2],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=0.5,s=4)
-    ax.legend()
-    plt.show()
-
-def createHeatmap(heatmap):
-    ##createHeatmap(specificDataFrame.corr())
-    plt.figure(figsize=(13, 6))
-    sns.heatmap(heatmap, vmax=1, annot=True, linewidths=.5)
-    plt.xticks(rotation=30, horizontalalignment="right")
-    plt.show()
-
-<<<<<<< Updated upstream
-=======
 def createHeatmaps(dataframes):
     ##createHeatmap(specificDataFrame.corr())
-    fig, axes = plt.subplots(ncols=3, sharey=True, figsize=(20, 8))  
+    fig, axes = plt.subplots(ncols=2, sharey=True, figsize=(20, 8))  
     counterForPlots = 0 
-    for triaxis in axes: 
-            triaxis.legend([],[], frameon=False)
-            sns.heatmap(dataframes[counterForPlots].corr(), vmax=1, annot=True, linewidths=.5,ax=triaxis)
-            #triaxis.xticks(rotation=30, horizontalalignment="right")
-            counterForPlots+=1
-plt.show()
+    sns.heatmap(dataframes[0],ax=axes[0],cbar=False, vmax=1, annot=True, linewidths=.5)
+    sns.heatmap(dataframes[1],ax=axes[1],cbar=True,vmax=1, annot=True, linewidths=.5)
+    plt.show()
 
-
->>>>>>> Stashed changes
 def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
     fig, axes = plt.subplots(len(columnArray)//4, 4, figsize=(12, 48))
     cArr = columnArray.copy()
@@ -200,10 +169,9 @@ def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
                     axis.scatter(dfProgramm[columnName1],dfProgramm[cArr[counterForPlots]],color=COLOR_FOR_PROGRAMM,alpha=ALPHA_VAL,s=4) 
 
             counterForPlots+=1
-<<<<<<< Updated upstream
+
     axis.legend()
-=======
->>>>>>> Stashed changes
+
     manager=plt.get_current_fig_manager()
     manager.full_screen_toggle()
     fig.legend(loc='upper left')
@@ -224,35 +192,13 @@ dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
 ## PRINT SUM Histograms ##
-<<<<<<< Updated upstream
+
+createHeatmaps([dfProgramm.corr(),dfWerbung.corr(),dfProgramm.corr()-dfWerbung.corr()])
+
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
 for x in columnArray:
     createScatters(dfProgramm,dfWerbung,x,columnArray)
-
-#createHeatMaps
-#createDescriptions
-#createScatters
-
-
-#createHeatmap(specificDataFrame.corr())
-#createHeatmap(dfWerbung.corr())
-#createHeatmap(dfProgramm.corr())
-#createScatterTime(dfWerbung,dfProgramm,'Zeit','ECR_RATIO')
-#createScatterTimeY(dfWerbung,dfProgramm,'ECR_RATIO','Zeit')
-#createScatter(dfWerbung,dfProgramm,'ECR_RATIO','FARBWECHSEL RATIO')
-#createScatter(dfWerbung,dfProgramm,'SIFT RATIO','FARBWECHSEL RATIO')
-#createScatter(dfWerbung,dfProgramm,'MVL SUM','MVL ABS')
-=======
-#createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
-
-createHeatmaps([dfProgramm.corr(),dfWerbung.corr(),dfProgramm.corr()-dfWerbung.corr()])
-
-# for x in columnArray:
-#     createScatters(dfProgramm,dfWerbung,x,columnArray)
-
-#createDescriptions
->>>>>>> Stashed changes
 
 dfWerbung.describe().to_csv("analysis\output\WerbungDescribe.csv")
 dfProgramm.describe().to_csv("analysis\output\ProgrammDescribe.csv")
