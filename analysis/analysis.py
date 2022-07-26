@@ -18,10 +18,12 @@ import matplotlib.patches as mpatches
 from os import listdir
 
 PATH_DATA_TO_BE_JOINED = os.getcwd()+"\\analysis\\input"
+OUTPUT_PATH = "analysis\output\\"
 COLOR_FOR_WERBUNG = "orange"
 COLOR_FOR_PROGRAMM ="cornflowerblue"
 STATUSES=[["Programm",COLOR_FOR_PROGRAMM],["Werbung",COLOR_FOR_WERBUNG]]
 ALPHA_VAL = 0.3
+SIZE_OF_PLOTS = [24,13.5]
 
 def returnJoinedDataFrame(path):
     #join data paths
@@ -34,6 +36,36 @@ def returnJoinedDataFrame(path):
     df = pd.concat(map(pd.read_csv, files), ignore_index=True)
     print(df)
     return df
+
+def removeOutliers(specificDataFrame):
+    print("Outliers werden entfernt")
+    print("Länge der Daten: "+str(len(specificDataFrame)))
+    specificDataFrame["LABEL"].replace(to_replace ="Programm Grenze",value ="Programm")
+    print("Programm Grenze in Programm verwandelt "+str(len(specificDataFrame)))
+    specificDataFrame["LABEL"].replace(to_replace ="Werbung Grenze",value ="Werbung")
+    print("Werbung Grenze in Werbung verwandelt "+str(len(specificDataFrame)))
+    specificDataFrame.dropna(subset=['SIFT RATIO'])
+    print("Leere Values in SIFT Ratio entfernt: "+str(len(specificDataFrame))) 
+    specificDataFrame.drop(specificDataFrame[specificDataFrame['SIFT RATIO'] == 0.0037703].index)
+    print("Error Values in SIFT Ratio Entfernt: "+str(len(specificDataFrame))) 
+    specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL SUM'] == 0.0037703].index)
+    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'] != 0.0037703]
+    print("Error Values in MVL Sum Entfernt: "+str(len(specificDataFrame))) 
+    specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL ABS'] == 0.0037703].index)
+    print("Error Values in MVL ABS Entfernt: "+str(len(specificDataFrame))) 
+    #remove error values!
+    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'].between(-1000, 1000)] 
+    print("MVL Sum Outliers entfernt: "+str(len(specificDataFrame))) 
+    specificDataFrame =specificDataFrame[specificDataFrame['MVL ABS'].between(0, 5000)] 
+    print("MVL ABS Outliers entfernt: "+str(len(specificDataFrame))) 
+    specificDataFrame = specificDataFrame[specificDataFrame['RMS'].between(0, 0.2)]  
+    print("RMS Outliers entfernt: "+str(len(specificDataFrame))) 
+    specificDataFrame = specificDataFrame[specificDataFrame['SIFT RATIO'].between(0, 1)]  
+    print("SIFT RATIO Outliers entfernt: "+str(len(specificDataFrame))) 
+    specificDataFrame = specificDataFrame[specificDataFrame['ECR_RATIO'].between(0.001, 0.999)]  
+    print("ECR RATIO Outliers entfernt: "+str(len(specificDataFrame)))
+    print(specificDataFrame.describe())
+    return specificDataFrame
 
 def setTextinPlot(graph,values):
     i=0
@@ -101,46 +133,29 @@ def createSumWerbungProgramHistograms(arrDf,STATUSES,columnArray):
     manager=plt.get_current_fig_manager()
     manager.full_screen_toggle()    
     fig.legend(loc='upper left')
-    fig.suptitle("Histogramme für alle Merkmale", fontsize=14)    
-    plt.show()
-
-def removeOutliers(specificDataFrame):
-    print("Outliers werden entfernt")
-    print("Länge der Daten: "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"].replace(to_replace ="Programm Grenze",value ="Programm")
-    print("Programm Grenze in Programm verwandelt "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"].replace(to_replace ="Werbung Grenze",value ="Werbung")
-    print("Werbung Grenze in Werbung verwandelt "+str(len(specificDataFrame)))
-    specificDataFrame.dropna(subset=['SIFT RATIO'])
-    print("Leere Values in SIFT Ratio entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame.drop(specificDataFrame[specificDataFrame['SIFT RATIO'] == 0.0037703].index)
-    print("Error Values in SIFT Ratio Entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL SUM'] == 0.0037703].index)
-    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'] != 0.0037703]
-    print("Error Values in MVL Sum Entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL ABS'] == 0.0037703].index)
-    print("Error Values in MVL ABS Entfernt: "+str(len(specificDataFrame))) 
-    #remove error values!
-    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'].between(-1000, 1000)] 
-    print("MVL Sum Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame =specificDataFrame[specificDataFrame['MVL ABS'].between(0, 5000)] 
-    print("MVL ABS Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame = specificDataFrame[specificDataFrame['RMS'].between(0, 0.2)]  
-    print("RMS Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame = specificDataFrame[specificDataFrame['SIFT RATIO'].between(0, 1)]  
-    print("SIFT RATIO Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame = specificDataFrame[specificDataFrame['ECR_RATIO'].between(0.001, 0.999)]  
-    print("ECR RATIO Outliers entfernt: "+str(len(specificDataFrame)))
-    print(specificDataFrame.describe())
-    return specificDataFrame
+    fig.suptitle("Histogramme für alle Merkmale", fontsize=14) 
+    fig.set_size_inches(SIZE_OF_PLOTS)   
+    plt.savefig(OUTPUT_PATH+'histogramme.png')
+    #plt.show()
 
 def createHeatmaps(dataframes):
     ##createHeatmap(specificDataFrame.corr())
-    fig, axes = plt.subplots(ncols=2, sharey=True, figsize=(20, 8))  
-    counterForPlots = 0 
-    sns.heatmap(dataframes[0],ax=axes[0],cbar=False, vmax=1, annot=True, linewidths=.5)
-    sns.heatmap(dataframes[1],ax=axes[1],cbar=True,vmax=1, annot=True, linewidths=.5)
-    plt.show()
+    fig, axes = plt.subplots(ncols=2, sharey=True, figsize=(SIZE_OF_PLOTS))  
+    sns.heatmap(dataframes[0],ax=axes[0],cbar=False,vmax=1, annot=True, linewidths=.5,xticklabels=True, yticklabels=True)
+    sns.heatmap(dataframes[0],ax=axes[1],cbar=True,vmax=1, annot=True, linewidths=.5,xticklabels=True, yticklabels=True)
+    axes[0].set_xticklabels(dataframes[0].columns,rotation=30,horizontalalignment="right")
+    axes[1].set_xticklabels(dataframes[1].columns,rotation=30,horizontalalignment="right")
+
+    #axes[0].set_yticklabels(dataframes[1].columns,rotation=30,horizontalalignment="right")
+    #axes[1].set_yticklabels(dataframes[1].columns,rotation=30,horizontalalignment="right")
+
+    axes[0].set(title="Datenpunkte des Programms")
+    axes[1].set(title="Datenpunkte der Werbung")
+    fig.suptitle("Korrelationen der Merkmale", fontsize=14)
+    manager=plt.get_current_fig_manager()
+    manager.full_screen_toggle()
+    plt.savefig(OUTPUT_PATH+'heatmaps.png')
+    #plt.show()
 
 def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
     fig, axes = plt.subplots(len(columnArray)//4, 4, figsize=(12, 48))
@@ -169,18 +184,19 @@ def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
                     axis.scatter(dfProgramm[columnName1],dfProgramm[cArr[counterForPlots]],color=COLOR_FOR_PROGRAMM,alpha=ALPHA_VAL,s=4) 
 
             counterForPlots+=1
-
-    axis.legend()
-
     manager=plt.get_current_fig_manager()
     manager.full_screen_toggle()
     fig.legend(loc='upper left')
-    fig.suptitle("Streungsdiagramme für "+columnName1, fontsize=14)
-    plt.show()
+    fig.set_size_inches(SIZE_OF_PLOTS)
+    plt.suptitle("Streungsdiagramme für "+columnName1, fontsize=14)
+    plt.savefig(OUTPUT_PATH+'scatter'+columnName1+'.png')
+    #plt.show()
 
 ## GET DATA FRAMES ##
 df = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED)
+## Convert Time Column ##
 df["Zeit"]=df["Zeit"].astype("datetime64[ns]")
+## Columns for Learning Modell ##
 columnArray=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
 specificDataFrame = df[columnArray]
 
@@ -200,8 +216,8 @@ createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 for x in columnArray:
     createScatters(dfProgramm,dfWerbung,x,columnArray)
 
-dfWerbung.describe().to_csv("analysis\output\WerbungDescribe.csv")
-dfProgramm.describe().to_csv("analysis\output\ProgrammDescribe.csv")
+dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
+dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
 
 
 
