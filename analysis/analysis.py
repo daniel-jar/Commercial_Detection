@@ -25,6 +25,21 @@ COLOR_FOR_PROGRAMM ="cornflowerblue"
 STATUSES=[["Programm",COLOR_FOR_PROGRAMM],["Werbung",COLOR_FOR_WERBUNG]]
 ALPHA_VAL = 0.3
 SIZE_OF_PLOTS = [24,13.5]
+OUTLIER_LIMIT_RMS = [0,200]
+
+#Outliers
+MVL_SUM = [-1000, 1000]
+MVL_ABS = [0,5000]
+RMS = [0, 0.2]
+SIFT = [0, 1]
+ECR = [0.001, 0.999]
+
+# Without Outliers
+# MVL_SUM = [-99000, 99000]
+# MVL_ABS = [-155000,155000]
+# RMS = [0, 1000]
+# SIFT = [0, 1000]
+# ECR = [0.001, 0.999]
 
 def returnJoinedDataFrame(path):
     #join data paths
@@ -55,15 +70,15 @@ def removeOutliers(specificDataFrame):
     specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL ABS'] == 0.0037703].index)
     print("Error Values in MVL ABS Entfernt: "+str(len(specificDataFrame))) 
     #remove error values!
-    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'].between(-1000, 1000)] 
+    specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'].between(MVL_SUM[0],MVL_SUM[1])] 
     print("MVL Sum Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame =specificDataFrame[specificDataFrame['MVL ABS'].between(0, 5000)] 
+    specificDataFrame =specificDataFrame[specificDataFrame['MVL ABS'].between(MVL_ABS[0],MVL_ABS[1])] 
     print("MVL ABS Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame = specificDataFrame[specificDataFrame['RMS'].between(0, 0.2)]  
+    specificDataFrame = specificDataFrame[specificDataFrame['RMS'].between(RMS[0],RMS[1])]  
     print("RMS Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame = specificDataFrame[specificDataFrame['SIFT RATIO'].between(0, 1)]  
+    specificDataFrame = specificDataFrame[specificDataFrame['SIFT RATIO'].between(SIFT[0],SIFT[1])]  
     print("SIFT RATIO Outliers entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame = specificDataFrame[specificDataFrame['ECR_RATIO'].between(0.001, 0.999)]  
+    specificDataFrame = specificDataFrame[specificDataFrame['ECR_RATIO'].between(ECR[0],ECR[1])]  
     print("ECR RATIO Outliers entfernt: "+str(len(specificDataFrame)))
     print(specificDataFrame.describe())
     return specificDataFrame
@@ -242,20 +257,44 @@ def make_labels(ax, boxplot):
 
 def createBoxplots(columnArray,dataFrames):
     ## Create Boxplots ## 
-    for x in columnArray:
-        #createBoxplots()
-        if x != "Zeit" and x!= "LABEL":
-            #dfWerbung.boxplot(x,color=COLOR_FOR_WERBUNG)
-            fig, axes = plt.subplots(nrows=5, sharey=True, figsize=(SIZE_OF_PLOTS))  
-            for ax in axes:
+    fig, axes = plt.subplots(nrows=5, ncols=2, sharey=True)
+    plotCounter=-1
+        #dfWerbung.boxplot(x,color=COLOR_FOR_WERBUNG)
+    for triaxis in axes:
+        for ax in triaxis:
+            plotCounter+=1
+            x = columnArray[plotCounter]
+            if x != "Zeit" and x!= "LABEL" and x!="Tag":
+                my_dict = {'Programm': dataFrames[0][x], 'Werbung': dataFrames[1][x]}
+                red_square = dict(marker="|",mew=0.5,markersize=10)
+                ax.boxplot(my_dict.values(),vert=False,labels=("Programm","Werbung"),showmeans=False,showcaps=True,notch=True,flierprops=red_square)
+                ax.set(title=x)
                 c = COLOR_FOR_WERBUNG
-                boxplot = plt.boxplot(dfWerbung[x], notch=True, patch_artist=True,
-                    boxprops=dict(facecolor=c, color=c),
-                    capprops=dict(color=c),
-                    whiskerprops=dict(color=c),
-                    flierprops=dict(color=c, markeredgecolor=c),
-                    medianprops=dict(color=c))
-                make_labels(ax,boxplot)
+                #newAx[0] = plt.boxplot(dataFrames[0][x], notch=True, patch_artist=False)
+                #boxplotWerbung = plt.boxplot(dataFrames[0][x], notch=True, patch_artist=False)
+                    # boxprops=dict(facecolor=c, color=c),
+                    # capprops=dict(color=c),
+                    # whiskerprops=dict(color=c),
+                    # flierprops=dict(color=c, markeredgecolor=c),
+                    # medianprops=dict(color=c))
+                #make_labels(ax,boxplotWerbung)
+                #make_labels(ax,boxplotProgramm)  
+                print(ax[0])
+    manager=plt.get_current_fig_manager()
+    manager.full_screen_toggle()
+    #fig.legend(loc='upper left')
+    fig.set_size_inches(SIZE_OF_PLOTS)
+    #fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    #plt.yticks((["Programm","Werbung"]))
+    plt.subplots_adjust(left=0.1,
+                    bottom=0.1, 
+                    right=0.9, 
+                    top=0.9, 
+                    wspace=0.1, 
+                    hspace=0.5)
+    plt.suptitle("Boxplots für alle Merkmale", fontsize=14)  
+    plt.savefig(OUTPUT_PATH+'boxplots.png')             
+    plt.show()
 
 
 ## GET DATA FRAMES ##
