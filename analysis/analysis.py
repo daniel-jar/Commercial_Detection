@@ -191,10 +191,10 @@ specificDataFrame = removeOutliers(specificDataFrame)
 dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
+## CREATE HEATMAPS ##
+createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
+
 ## PRINT SUM Histograms ##
-
-createHeatmaps([dfProgramm.corr(),dfWerbung.corr(),dfProgramm.corr()-dfWerbung.corr()])
-
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
 for x in columnArray:
