@@ -259,17 +259,19 @@ def createBoxplots(columnArray,dataFrames):
     ## Create Boxplots ## 
     fig, axes = plt.subplots(nrows=5, ncols=2, sharey=True)
     plotCounter=-1
+    medianprops = dict(color='firebrick')
         #dfWerbung.boxplot(x,color=COLOR_FOR_WERBUNG)
     for triaxis in axes:
         for ax in triaxis:
             plotCounter+=1
             x = columnArray[plotCounter]
             if x != "Zeit" and x!= "LABEL" and x!="Tag":
-                my_dict = {'Programm': dataFrames[0][x], 'Werbung': dataFrames[1][x]}
-                red_square = dict(marker="|",mew=0.5,markersize=10)
-                ax.boxplot(my_dict.values(),vert=False,labels=("Programm","Werbung"),showmeans=False,showcaps=True,notch=True,flierprops=red_square)
+                my_dict = {'Werbung': dataFrames[1][x],'Programm': dataFrames[0][x]}
+                red_square = dict(marker="|",mew=0.5,markersize=10,alpha=.1)
+                box_dict=ax.boxplot(my_dict.values(),vert=False,labels=("Werbung","Programm"),medianprops=medianprops,showcaps=True,notch=True,flierprops=red_square)
                 ax.set(title=x)
                 c = COLOR_FOR_WERBUNG
+                colors = [COLOR_FOR_WERBUNG,COLOR_FOR_PROGRAMM]
                 #newAx[0] = plt.boxplot(dataFrames[0][x], notch=True, patch_artist=False)
                 #boxplotWerbung = plt.boxplot(dataFrames[0][x], notch=True, patch_artist=False)
                     # boxprops=dict(facecolor=c, color=c),
@@ -277,9 +279,43 @@ def createBoxplots(columnArray,dataFrames):
                     # whiskerprops=dict(color=c),
                     # flierprops=dict(color=c, markeredgecolor=c),
                     # medianprops=dict(color=c))
-                #make_labels(ax,boxplotWerbung)
-                #make_labels(ax,boxplotProgramm)  
-                print(ax[0])
+                    # medianprops=dict(color=c))
+                #print(ax[0])
+                    # medianprops=dict(color=c))
+                ylabel=0
+                plt.rc('font', size=7) 
+                for item in ['boxes', 'fliers', 'medians', 'means']:
+                    marklabelCounter=-1
+                    for sub_item,color in zip(box_dict[item], colors):
+                        marklabelCounter+=1
+                        if item!="medians":
+                            plt.setp(sub_item, color=color)
+                        if item!="fliers":
+                            ypos = sub_item.get_ydata()
+                            yoff = (ypos[1] - ypos[0])
+                            ylabel = ypos[1]
+
+                        if item=="boxes":
+                            pc25 = sub_item.get_xdata().min()
+                            pc75 = sub_item.get_xdata().max()
+                            ax.text(pc25, ylabel+yoff*0.8,'Q1:{:6.3g}'.format(pc25), va='center')
+                            ax.text(pc75, ylabel+yoff*0.8,'Q3:{:6.3g}'.format(pc75), va='center')        
+                        if item == "medians":
+                            median = sub_item.get_xdata()[1]
+                            ax.text(median, ylabel+yoff*4,u'\u03bc:{:6.3g}'.format(median), va='center')
+                            ax.text(median, ylabel-yoff*4,'σ:{:6.3g}'.format(dataFrames[marklabelCounter][x].std()), va='center')
+                            
+
+                for item in ['whiskers', 'caps']:
+                    for sub_items,color in zip(zip(box_dict[item][::2],box_dict[item][1::2]),colors):
+                        plt.setp(sub_items, color=color)
+                        if item == "caps":
+                            capbottom = sub_item.get_xdata()[0]
+                            captop = sub_item .get_xdata()[0]
+                            ax.text(-10, ylabel-30,'m:{:6.3g}'.format(capbottom), va='center')
+                            ax.text(-10, ylabel-30,'M:{:6.3g}'.format(captop), va='center')
+                plt.rc('font', size=10) 
+
     manager=plt.get_current_fig_manager()
     manager.full_screen_toggle()
     #fig.legend(loc='upper left')
@@ -295,7 +331,6 @@ def createBoxplots(columnArray,dataFrames):
     plt.suptitle("Boxplots für alle Merkmale", fontsize=14)  
     plt.savefig(OUTPUT_PATH+'boxplots.png')             
     plt.show()
-
 
 ## GET DATA FRAMES ##
 df = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED)
@@ -318,14 +353,14 @@ createBoxplots(columnArray,[dfProgramm,dfWerbung])
 ## CREATE HEATMAPS ##
 createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 
-## PRINT SUM Histograms ##
+# ## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
 for x in columnArray:
     createScatters(dfProgramm,dfWerbung,x,columnArray)
 
-dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
-dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
+# dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
+# dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
 
 
 
