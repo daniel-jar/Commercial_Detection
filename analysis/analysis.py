@@ -1,7 +1,8 @@
 from itertools import count
+from logging import makeLogRecord
 from re import X
 from tkinter import Y
-from turtle import xcor
+from turtle import color, xcor
 from async_generator import yield_from_
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -192,6 +193,71 @@ def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
     plt.savefig(OUTPUT_PATH+'scatter'+columnName1+'.png')
     #plt.show()
 
+def make_labels(ax, boxplot):
+
+    # Grab the relevant Line2D instances from the boxplot dictionary
+    iqr = boxplot['boxes'][0]
+    caps = boxplot['caps']
+    med = boxplot['medians'][0]
+    fly = boxplot['fliers'][0]
+
+    # The x position of the median line
+    xpos = med.get_xdata()
+
+    # Lets make the text have a horizontal offset which is some 
+    # fraction of the width of the box
+    xoff = 0.10 * (xpos[1] - xpos[0])
+
+    # The x position of the labels
+    xlabel = xpos[1] + xoff
+
+    # The median is the y-position of the median line
+    median = med.get_ydata()[1]
+
+    # The 25th and 75th percentiles are found from the
+    # top and bottom (max and min) of the box
+    pc25 = iqr.get_ydata().min()
+    pc75 = iqr.get_ydata().max()
+
+    # The caps give the vertical position of the ends of the whiskers
+    capbottom = caps[0].get_ydata()[0]
+    captop = caps[1].get_ydata()[0]
+
+    # Make some labels on the figure using the values derived above
+    ax.text(xlabel, median,
+            'Median = {:6.3g}'.format(median), va='center')
+    ax.text(xlabel, pc25,
+            '25th percentile = {:6.3g}'.format(pc25), va='center')
+    ax.text(xlabel, pc75,
+            '75th percentile = {:6.3g}'.format(pc75), va='center')
+    ax.text(xlabel, capbottom,
+            'Bottom cap = {:6.3g}'.format(capbottom), va='center')
+    ax.text(xlabel, captop,
+            'Top cap = {:6.3g}'.format(captop), va='center')
+
+    # Many fliers, so we loop over them and create a label for each one
+    for flier in fly.get_ydata():
+        ax.text(1 + xoff, flier,
+                'Flier = {:6.3g}'.format(flier), va='center')
+
+def createBoxplots(columnArray,dataFrames):
+    ## Create Boxplots ## 
+    for x in columnArray:
+        #createBoxplots()
+        if x != "Zeit" and x!= "LABEL":
+            #dfWerbung.boxplot(x,color=COLOR_FOR_WERBUNG)
+            fig, axes = plt.subplots(nrows=5, sharey=True, figsize=(SIZE_OF_PLOTS))  
+            for ax in axes:
+                c = COLOR_FOR_WERBUNG
+                boxplot = plt.boxplot(dfWerbung[x], notch=True, patch_artist=True,
+                    boxprops=dict(facecolor=c, color=c),
+                    capprops=dict(color=c),
+                    whiskerprops=dict(color=c),
+                    flierprops=dict(color=c, markeredgecolor=c),
+                    medianprops=dict(color=c))
+                make_labels(ax,boxplot)
+
+
 ## GET DATA FRAMES ##
 df = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED)
 ## Convert Time Column ##
@@ -207,6 +273,9 @@ specificDataFrame = removeOutliers(specificDataFrame)
 dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
+## CREATE BOXPLOTS ##
+createBoxplots(columnArray,[dfProgramm,dfWerbung])
+
 ## CREATE HEATMAPS ##
 createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 
@@ -218,6 +287,7 @@ for x in columnArray:
 
 dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
 dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
+
 
 
 
