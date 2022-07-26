@@ -158,6 +158,21 @@ def createHeatmap(heatmap):
     plt.xticks(rotation=30, horizontalalignment="right")
     plt.show()
 
+<<<<<<< Updated upstream
+=======
+def createHeatmaps(dataframes):
+    ##createHeatmap(specificDataFrame.corr())
+    fig, axes = plt.subplots(ncols=3, sharey=True, figsize=(20, 8))  
+    counterForPlots = 0 
+    for triaxis in axes: 
+            triaxis.legend([],[], frameon=False)
+            sns.heatmap(dataframes[counterForPlots].corr(), vmax=1, annot=True, linewidths=.5,ax=triaxis)
+            #triaxis.xticks(rotation=30, horizontalalignment="right")
+            counterForPlots+=1
+plt.show()
+
+
+>>>>>>> Stashed changes
 def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
     fig, axes = plt.subplots(len(columnArray)//4, 4, figsize=(12, 48))
     cArr = columnArray.copy()
@@ -185,7 +200,10 @@ def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
                     axis.scatter(dfProgramm[columnName1],dfProgramm[cArr[counterForPlots]],color=COLOR_FOR_PROGRAMM,alpha=ALPHA_VAL,s=4) 
 
             counterForPlots+=1
+<<<<<<< Updated upstream
     axis.legend()
+=======
+>>>>>>> Stashed changes
     manager=plt.get_current_fig_manager()
     manager.full_screen_toggle()
     fig.legend(loc='upper left')
@@ -206,6 +224,7 @@ dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
 ## PRINT SUM Histograms ##
+<<<<<<< Updated upstream
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
 for x in columnArray:
@@ -224,6 +243,16 @@ for x in columnArray:
 #createScatter(dfWerbung,dfProgramm,'ECR_RATIO','FARBWECHSEL RATIO')
 #createScatter(dfWerbung,dfProgramm,'SIFT RATIO','FARBWECHSEL RATIO')
 #createScatter(dfWerbung,dfProgramm,'MVL SUM','MVL ABS')
+=======
+#createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
+
+createHeatmaps([dfProgramm.corr(),dfWerbung.corr(),dfProgramm.corr()-dfWerbung.corr()])
+
+# for x in columnArray:
+#     createScatters(dfProgramm,dfWerbung,x,columnArray)
+
+#createDescriptions
+>>>>>>> Stashed changes
 
 dfWerbung.describe().to_csv("analysis\output\WerbungDescribe.csv")
 dfProgramm.describe().to_csv("analysis\output\ProgrammDescribe.csv")
