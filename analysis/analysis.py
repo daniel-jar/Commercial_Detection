@@ -56,10 +56,15 @@ def returnJoinedDataFrame(path):
 def removeOutliers(specificDataFrame):
     print("Outliers werden entfernt")
     print("Länge der Daten: "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"] = specificDataFrame["LABEL"].str.replace("Programm","Programm Grenze")
-    print("Programm Grenze in Programm verwandelt "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"] = specificDataFrame["LABEL"].str.replace("Werbung Grenze","Werbung")
-    print("Werbung Grenze in Werbung verwandelt "+str(len(specificDataFrame)))
+    print("Programm Grenzen vorher: "+str((specificDataFrame["LABEL"]=='Programm Grenze').sum()))
+    print("Werbung Grenzen vorher: "+str(((specificDataFrame["LABEL"]=='Werbung Grenze').sum())))
+    newFrame=specificDataFrame.replace({'Werbung Grenze': 'Werbung'}, regex=True).copy()
+    specificDataFrame=newFrame
+    newFrame=specificDataFrame.replace({'Programm Grenze': 'Programm'}, regex=True).copy()
+    specificDataFrame=newFrame
+    print("Programm Grenzen nachher: "+str(((specificDataFrame["LABEL"]=='Programm Grenze').sum())))
+    print("Werbung Grenzen nachher: "+str(((specificDataFrame["LABEL"]=='Werbung Grenze').sum())))
+    print("Länge der Daten "+str(len(specificDataFrame)))
     specificDataFrame.dropna(subset=['SIFT RATIO'])
     print("Leere Values in SIFT Ratio entfernt: "+str(len(specificDataFrame))) 
     specificDataFrame = specificDataFrame[specificDataFrame['SIFT RATIO'] != 0.0037703]
@@ -355,17 +360,17 @@ dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
 
-# # ## PRINT SUM Histograms ##
-# createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
+# ## PRINT SUM Histograms ##
+createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
-# ## CREATE BOXPLOTS ##
-# createBoxplots(columnArray,[dfProgramm,dfWerbung])
+## CREATE BOXPLOTS ##
+createBoxplots(columnArray,[dfProgramm,dfWerbung])
 
-# # ## CREATE HEATMAPS ##
-# createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
+# ## CREATE HEATMAPS ##
+createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 
-# for x in columnArray:
-#     createScatters(dfProgramm,dfWerbung,x,columnArray)
+for x in columnArray:
+    createScatters(dfProgramm,dfWerbung,x,columnArray)
 
 # dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
 # dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
