@@ -10,6 +10,7 @@ librosa
 sift
 pyautogui
 Pillow
+chefboost
 
 py -m pip install pipwin
 py -m pipwin install pyaudio
