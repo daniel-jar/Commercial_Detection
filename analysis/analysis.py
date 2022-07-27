@@ -44,13 +44,13 @@ ECR = [-10000.001, 10000.999]
 ZCR = [0,5000]
 
 
-# #Different Outliers
-# MVL_SUM = [-2500, 2500]
-# MVL_ABS = [0,6500]
-# RMS = [0, 0.2]
-# SIFT = [0, 1]
-# ECR = [0.001, 0.999]
-# ZCR = [0,400]
+#Different Outliers
+MVL_SUM = [-2500, 2500]
+MVL_ABS = [0,6500]
+RMS = [0, 0.2]
+SIFT = [0, 1]
+ECR = [0.001, 0.999]
+ZCR = [0,400]
 
 def returnJoinedDataFrame(path):
     #join data paths
