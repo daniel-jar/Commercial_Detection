@@ -33,13 +33,24 @@ MVL_ABS = [0,5000]
 RMS = [0, 0.2]
 SIFT = [0, 1]
 ECR = [0.001, 0.999]
+ZCR = [0,400]
 
-# #Without Outliers
-# MVL_SUM = [-99000, 99000]
-# MVL_ABS = [-155000,155000]
-# RMS = [0, 1000]
-# SIFT = [0, 1000]
+#Without Outliers
+MVL_SUM = [-99000, 99000]
+MVL_ABS = [-155000,155000]
+RMS = [0, 1000]
+SIFT = [-1, 55]
+ECR = [-10000.001, 10000.999]
+ZCR = [0,5000]
+
+
+# #Different Outliers
+# MVL_SUM = [-2500, 2500]
+# MVL_ABS = [0,6500]
+# RMS = [0, 0.2]
+# SIFT = [0, 1]
 # ECR = [0.001, 0.999]
+# ZCR = [0,400]
 
 def returnJoinedDataFrame(path):
     #join data paths
@@ -84,6 +95,8 @@ def removeOutliers(specificDataFrame):
     print("SIFT RATIO Outliers entfernt: "+str(len(specificDataFrame))) 
     specificDataFrame = specificDataFrame[specificDataFrame['ECR_RATIO'].between(ECR[0],ECR[1])]  
     print("ECR RATIO Outliers entfernt: "+str(len(specificDataFrame)))
+    specificDataFrame = specificDataFrame[specificDataFrame['ZCR'].between(ZCR[0],ZCR[1])]  
+    print("ZCR RATIO Outliers entfernt: "+str(len(specificDataFrame)))
     print(specificDataFrame.describe())
     return specificDataFrame
 
@@ -234,7 +247,7 @@ def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
     manager.full_screen_toggle()
     fig.legend(loc='upper left')
     fig.set_size_inches(SIZE_OF_PLOTS)
-    plt.suptitle("Streungsdiagramme für "+columnName1, fontsize=14)
+    plt.suptitle("Streuungsdiagramme für "+columnName1, fontsize=14)
     plt.savefig(OUTPUT_PATH+'scatter'+columnName1+'.png')
     #plt.show()
 
@@ -341,7 +354,7 @@ def createBoxplots(columnArray,dataFrames):
     leg = fig.legend(handles=countPlot,labels=["Programm","Werbung"],loc='upper left')  
     leg.legendHandles[0].set_color(COLOR_FOR_PROGRAMM)
     leg.legendHandles[1].set_color(COLOR_FOR_WERBUNG)
-    plt.savefig(OUTPUT_PATH+'boxplots.png')   
+    plt.savefig(OUTPUT_PATH+'boxplots.png')  
     #plt.show()
 
 ## GET DATA FRAMES ##
@@ -363,19 +376,21 @@ specificDataFrame["Zeit"]=specificDataFrame["Zeit"].astype("datetime64[ns]")
 dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
+## CREATE BOXPLOTS ##
+createBoxplots(columnArray,[dfProgramm,dfWerbung])
+print("Boxplots Created")
 
 # ## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
-
-## CREATE BOXPLOTS ##
-createBoxplots(columnArray,[dfProgramm,dfWerbung])
+print("Histograms Created")
 
 # ## CREATE HEATMAPS ##
 createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
+print("Heatmaps Created")
 
 for x in columnArray:
     createScatters(dfProgramm,dfWerbung,x,columnArray)
-
+print("Scatters Created")
 # dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
 # dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
 
