@@ -50,15 +50,15 @@ def returnJoinedDataFrame(path):
     print("Result CSV after joining all CSV files at a particular location...");
     # joining files with concat and read_csv
     df = pd.concat(map(pd.read_csv, files), ignore_index=True)
-    print(df)
+    #print(df)
     return df
 
 def removeOutliers(specificDataFrame):
     print("Outliers werden entfernt")
     print("Länge der Daten: "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"].replace(to_replace ="Programm Grenze",value ="Programm")
+    specificDataFrame["LABEL"].replace(to_replace="Programm Grenze",value ="Programm",inplace=True)
     print("Programm Grenze in Programm verwandelt "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"].replace(to_replace ="Werbung Grenze",value ="Werbung")
+    specificDataFrame["LABEL"].replace(to_replace ="Werbung Grenze",value ="Werbung",inplace=True)
     print("Werbung Grenze in Werbung verwandelt "+str(len(specificDataFrame)))
     specificDataFrame.dropna(subset=['SIFT RATIO'])
     print("Leere Values in SIFT Ratio entfernt: "+str(len(specificDataFrame))) 
@@ -91,7 +91,7 @@ def setTextinPlot(graph,values):
         x, y = p.get_xy()
         plt.text(x+width/2,
                 y+height*1.01,
-                str(round(values[i],2))+'',
+                str(round(values[i],2))+'%',
                 ha='center',
                 weight='normal')
         i+=1
@@ -105,6 +105,32 @@ def setTextAbovePlot(graph,values):
         plt.text(x+width/2,
                 y+height*1.01,
                 str(values[i])+'',
+                ha='center',
+                weight='normal')
+        i+=1
+
+def setTextAbovePlotBarh(graph,values):
+    i=0
+    for p in graph:
+        width = p.get_width()
+        height = p.get_height()/2
+        x, y = p.get_xy()
+        plt.text(x+width,
+                y+height,
+                str(values[i])+'',
+                ha='center',
+                weight='normal')
+        i+=1
+
+def setTextinPlotBarh(graph,values):
+    i=0
+    for p in graph:
+        width = p.get_width()/2
+        height = p.get_height()/2
+        x, y = p.get_xy()
+        plt.text(x+width,
+                y+height,
+                str(round(values[i],2))+'%',
                 ha='center',
                 weight='normal')
         i+=1
@@ -208,59 +234,13 @@ def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
     plt.savefig(OUTPUT_PATH+'scatter'+columnName1+'.png')
     #plt.show()
 
-def make_labels(ax, boxplot):
-
-    # Grab the relevant Line2D instances from the boxplot dictionary
-    iqr = boxplot['boxes'][0]
-    caps = boxplot['caps']
-    med = boxplot['medians'][0]
-    fly = boxplot['fliers'][0]
-
-    # The x position of the median line
-    xpos = med.get_xdata()
-
-    # Lets make the text have a horizontal offset which is some 
-    # fraction of the width of the box
-    xoff = 0.10 * (xpos[1] - xpos[0])
-
-    # The x position of the labels
-    xlabel = xpos[1] + xoff
-
-    # The median is the y-position of the median line
-    median = med.get_ydata()[1]
-
-    # The 25th and 75th percentiles are found from the
-    # top and bottom (max and min) of the box
-    pc25 = iqr.get_ydata().min()
-    pc75 = iqr.get_ydata().max()
-
-    # The caps give the vertical position of the ends of the whiskers
-    capbottom = caps[0].get_ydata()[0]
-    captop = caps[1].get_ydata()[0]
-
-    # Make some labels on the figure using the values derived above
-    ax.text(xlabel, median,
-            'Median = {:6.3g}'.format(median), va='center')
-    ax.text(xlabel, pc25,
-            '25th percentile = {:6.3g}'.format(pc25), va='center')
-    ax.text(xlabel, pc75,
-            '75th percentile = {:6.3g}'.format(pc75), va='center')
-    ax.text(xlabel, capbottom,
-            'Bottom cap = {:6.3g}'.format(capbottom), va='center')
-    ax.text(xlabel, captop,
-            'Top cap = {:6.3g}'.format(captop), va='center')
-
-    # Many fliers, so we loop over them and create a label for each one
-    for flier in fly.get_ydata():
-        ax.text(1 + xoff, flier,
-                'Flier = {:6.3g}'.format(flier), va='center')
-
 def createBoxplots(columnArray,dataFrames):
     ## Create Boxplots ## 
+    countPlot=[]
     fig, axes = plt.subplots(nrows=5, ncols=2, sharey=True)
     plotCounter=-1
     medianprops = dict(color='firebrick')
-        #dfWerbung.boxplot(x,color=COLOR_FOR_WERBUNG)
+    #dfWerbung.boxplot(x,color=COLOR_FOR_WERBUNG)
     for triaxis in axes:
         for ax in triaxis:
             plotCounter+=1
@@ -332,6 +312,12 @@ def createBoxplots(columnArray,dataFrames):
                             ax.text(capbottom, ylabel-yoff*1.5,'uW:'+str(round(capbottom,4)), va='center',ha="center")
                             ax.text(captop, ylabel-yoff*1.5,'oW:{:6.4g}'.format(captop), va='center',ha="center")
                 plt.rc('font', size=10) 
+            elif plotCounter==9:
+                certainCounts = createCount(len(dataFrames[0]),len(dataFrames[1]))
+                countPlot = ax.barh([2,1],certainCounts[0],color=[COLOR_FOR_PROGRAMM, COLOR_FOR_WERBUNG])
+                setTextAbovePlotBarh(countPlot,[certainCounts[0][0],certainCounts[0][1]])
+                setTextinPlotBarh(countPlot,[certainCounts[1][0],certainCounts[1][1]])
+                ax.set(title="Anzahl der Datenpunkte")
 
     manager=plt.get_current_fig_manager()
     manager.full_screen_toggle()
@@ -346,8 +332,11 @@ def createBoxplots(columnArray,dataFrames):
                     wspace=0.1, 
                     hspace=0.5)
     plt.suptitle("Boxplots für alle Merkmale", fontsize=14)  
-    plt.savefig(OUTPUT_PATH+'boxplots.png')             
-    plt.show()
+    leg = fig.legend(handles=countPlot,labels=["Programm","Werbung"],loc='upper left')  
+    leg.legendHandles[0].set_color(COLOR_FOR_PROGRAMM)
+    leg.legendHandles[1].set_color(COLOR_FOR_WERBUNG)
+    plt.savefig(OUTPUT_PATH+'boxplots.png')   
+    #plt.show()
 
 ## GET DATA FRAMES ##
 df = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED)
@@ -359,25 +348,28 @@ specificDataFrame = df[columnArray]
 
 ## REMOVE OUTLIERS AND FALSE NUMBERS ## 
 specificDataFrame = removeOutliers(specificDataFrame)
+specificDataFrame.describe().to_csv(OUTPUT_PATH+"formatierteDescription.csv")
+specificDataFrame.to_csv(OUTPUT_PATH+"zusammenGeführte.csv")
 
 ## SPLIT INTO Programm and WERBUNG Frames ##
 dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
-## CREATE BOXPLOTS ##
-createBoxplots(columnArray,[dfProgramm,dfWerbung])
-
-## CREATE HEATMAPS ##
-createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 
 # ## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
+## CREATE BOXPLOTS ##
+createBoxplots(columnArray,[dfProgramm,dfWerbung])
+
+# ## CREATE HEATMAPS ##
+createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
+
 for x in columnArray:
     createScatters(dfProgramm,dfWerbung,x,columnArray)
 
-dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
-dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
+# dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
+# dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
 
 
 
