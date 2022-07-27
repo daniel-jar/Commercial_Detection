@@ -1,8 +1,9 @@
-SQDIFF_EDGE = 0.4
-CCOEFF_CONFIDENT = 0.9
-CCOEFF_EDGE = 0.5
-SQDIFF_LIMIT = 1
-
+SQDIFF_EDGE = 0.65 #solange sqdiff kleiner als x ist ist es wsl. ein logo
+CCOEFF_CONFIDENT = 0.9 #solange ccoeff größer als x ist ist es definitiv ein logo
+CCOEFF_EDGE = 0.5   #solange ccoeff größer als x ist ist es wsl ein logo
+SQDIFF_LIMIT = 1    #solange sqdiff x ist ist es definitiv kein logo
+# Vorschlag Programm in Werbung andere Werte 
+# Wie von Werbung in Programm
 #LOGO Upper
 EXPECTED_MARGIN_X = 160
 EXPECTED_MARGIN_Y = 70
@@ -11,6 +12,9 @@ SIZE_OF_EXPECTED_LOGO_Y = 48
 
 #LOGO Lower than usual
 EXPECTED_LOWER_MARGIN_Y = 64
+
+#EXPECTED BLACKBAR OFFSET
+EXPECTED_BLACKBAR_OFFSET = 26
 
 #LOGO Wider
 EXPECTED_WIDER_LEFT_MARGIN_X = -23
@@ -25,6 +29,10 @@ SIZE_OF_NEWSTIME_X = 20
 SIZE_OF_NEWSTIME_Y = 20
 NEWSTIME_MARGINS=[NEWSTIME_MARGIN_TOPLEFTX,NEWSTIME_MARGIN_TOPLEFTY,SIZE_OF_NEWSTIME_X,SIZE_OF_NEWSTIME_Y]
 
+#Logo Slightly Lower
+#LOGO Lower than usual
+EXPECTED_SLIGHTLY_LOWER_MARGIN_Y = 51
+
 #BORDEREDGES for 4:3
 EXPECTED_LEFTER_MARGIN_X = -143
 
@@ -34,9 +42,9 @@ TOP_BORDER_MARGIN = 33
 RIGHT_BORDER_MARGIN = 10
 BOTTOM_BORDER_MARGIN = 89
 
-UPPER,LOWER,NEWSTIME,WIDER,LEFTER = 0,1,2,3,4
-REGION_NAMES=["UPPER","LOWER","NEWSTIME","WIDER","LEFTER"]
-CONFIDENCES = [0.3,0.3,0.7,0.3,0.3]
+UPPER,LOWER,NEWSTIME,WIDER,LEFTER,SLIGHTLY_LEFTER = 0,1,2,3,4,5
+REGION_NAMES=["UPPER","LOWER","NEWSTIME","WIDER","LEFTER","SLIGHTLYLOWER"]
+CONFIDENCES = [0.2,0.2,0.7,0.2,0.2,0.2]
 
 def getConfindences():
     return CONFIDENCES
@@ -77,11 +85,35 @@ def getExpectedLogoRegion(currentSelectedExpectedRegion,currentSelectedExpectedR
             break
         
     if  not (logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
-        print("Use current per default")
-        newSelectedExpectedRegion=currentSelectedExpectedRegion
-        newSelectedExpectedRegionPYAUTOGUI=currentSelectedExpectedRegionPYAUTOGUI
-        NEW_PICTURE_TV_LOGO=CURRENT_PICTURE_TV_LOGO
-        NEW_CONFIDENCE=CURRENT_CONFIDENCE
+        print("Search for black bars")
+        expectedMarginThroughBlackBar = detectBlackBorder(np.array(imageApplicationVideoStream,dtype="uint8"))-EXPECTED_BLACKBAR_OFFSET
+        print("Detected Count of Black Rows: "+str(expectedMarginThroughBlackBar))
+        newSelectedExpectedRegion=regions[UPPER]
+        newSelectedExpectedRegionPYAUTOGUI=regionsPYAUTOGUI[UPPER]
+        NEW_PICTURE_TV_LOGO=LOGO_COLLECTION[UPPER]
+        NEW_CONFIDENCE=CONFIDENCES[UPPER]
+
+        newSelectedExpectedRegion = list(newSelectedExpectedRegion)
+        newSelectedExpectedRegionPYAUTOGUI = list(newSelectedExpectedRegionPYAUTOGUI)
+
+        newSelectedExpectedRegion[1]=newSelectedExpectedRegion[1]+expectedMarginThroughBlackBar
+        newSelectedExpectedRegion[3]=newSelectedExpectedRegion[3]+expectedMarginThroughBlackBar
+        newSelectedExpectedRegionPYAUTOGUI[1]=newSelectedExpectedRegionPYAUTOGUI[1]+expectedMarginThroughBlackBar
+
+        logoIndicationBooleanCCOEFF,logoIndicationBooleanSQDIFF,resTM_CCOEFF_NORMED,resTM_SQDIFF_NORMED,imageExpectedLogo\
+         = getLogoConfidence(newSelectedExpectedRegion,imageApplicationVideoStream,NEW_PICTURE_TV_LOGO,cv,np,None)
+
+        imageExpectedLogo.save("debugging/blackbarOffset.png")
+
+        if  not (logoIndicationBooleanCCOEFF and logoIndicationBooleanSQDIFF):
+            print("Use current per default")
+            newSelectedExpectedRegion=currentSelectedExpectedRegion
+            newSelectedExpectedRegionPYAUTOGUI=currentSelectedExpectedRegionPYAUTOGUI
+            NEW_PICTURE_TV_LOGO=CURRENT_PICTURE_TV_LOGO
+            NEW_CONFIDENCE=CURRENT_CONFIDENCE
+        else:
+            print("Black bar detected and found")
+            
 
     return newSelectedExpectedRegion,newSelectedExpectedRegionPYAUTOGUI,NEW_PICTURE_TV_LOGO,NEW_CONFIDENCE,(logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF) 
 
@@ -100,7 +132,8 @@ def getRegions(WIDTH):
     regionExpectedLogoNewsTime=(NEWSTIME_MARGINS[0],NEWSTIME_MARGINS[1],NEWSTIME_MARGINS[0]+NEWSTIME_MARGINS[2],NEWSTIME_MARGINS[1]+NEWSTIME_MARGINS[3])
     regionExpectedLogoWide=(searchLogoX1+EXPECTED_WIDER_LEFT_MARGIN_X,searchLogoY1+EXPECTED_WIDER_LEFT_MARGIN_Y ,searchLogoX2+EXPECTED_WIDER_LEFT_MARGIN_X+EXPECTED_WIDER_SIZE_MARGIN_X,searchLogoY2+EXPECTED_WIDER_SIZE_MARGIN_Y+EXPECTED_WIDER_LEFT_MARGIN_Y)
     regionExpectedLogoLEFTER=(searchLogoX1+EXPECTED_LEFTER_MARGIN_X,searchLogoY1,searchLogoX2+EXPECTED_LEFTER_MARGIN_X,searchLogoY2)
-    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide,regionExpectedLogoLEFTER]
+    regionExpectedLogoSlightlyLower=(searchLogoX1,searchLogoY1+EXPECTED_SLIGHTLY_LOWER_MARGIN_Y,searchLogoX2,searchLogoY2+EXPECTED_SLIGHTLY_LOWER_MARGIN_Y)
+    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide,regionExpectedLogoLEFTER,regionExpectedLogoSlightlyLower]
     
 
 def getRegionsPYAUTOGUI(APPLICATION_POSITION):
@@ -123,8 +156,19 @@ def getRegionsPYAUTOGUI(APPLICATION_POSITION):
     regionExpectedLogoUpper=(searchLogoX1,searchLogoY1,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
     regionExpectedLogoWide=(searchLogoX1+EXPECTED_WIDER_LEFT_MARGIN_X,searchLogoY1+EXPECTED_WIDER_LEFT_MARGIN_Y,SIZE_OF_EXPECTED_LOGO_X+EXPECTED_WIDER_SIZE_MARGIN_X,SIZE_OF_EXPECTED_LOGO_Y+EXPECTED_WIDER_SIZE_MARGIN_Y)
     regionExpectedLogoLefter=(searchLogoX1+EXPECTED_LEFTER_MARGIN_X,searchLogoY1,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
+    regionExpectedLogoSlightlyLower=(searchLogoX1,searchLogoY1+EXPECTED_SLIGHTLY_LOWER_MARGIN_Y,SIZE_OF_EXPECTED_LOGO_X,SIZE_OF_EXPECTED_LOGO_Y)
+    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide,regionExpectedLogoLefter,regionExpectedLogoSlightlyLower]
 
-    return [regionExpectedLogoUpper,regionExpectedLogoLower,regionExpectedLogoNewsTime,regionExpectedLogoWide,regionExpectedLogoLefter]
+def getLogos(cv):
+    #searchingForLogo
+    PICTURE_TV_LOGO_UPPER = cv.imread("locators\pro7.png",cv.IMREAD_GRAYSCALE)
+    #PICTURE_TV_LOGO_LOWER = cv.imread("locators\pro7_small.png",cv.IMREAD_GRAYSCALE)
+    PICTURE_TV_LOGO_NEWSTIME = cv.imread("locators\pro7_newstime.png",cv.IMREAD_GRAYSCALE)
+    PICTURE_TV_LOGO_WIDER = cv.imread("locators\pro7_gezerrt.png",cv.IMREAD_GRAYSCALE)
+    PICTURE_TV_LOGO_LOWER = PICTURE_TV_LOGO_UPPER
+    PICTURE_TV_LOGO_LEFTER = PICTURE_TV_LOGO_UPPER
+    PICTURE_TV_LOGO_SLIGHTLY_LEFTER = PICTURE_TV_LOGO_UPPER
+    return [PICTURE_TV_LOGO_UPPER,PICTURE_TV_LOGO_LOWER,PICTURE_TV_LOGO_NEWSTIME,PICTURE_TV_LOGO_WIDER,PICTURE_TV_LOGO_LEFTER,PICTURE_TV_LOGO_SLIGHTLY_LEFTER]
 
 def getRelativeWindowPosition(handleVariables,re):
     TOP_LEFT_X=int(''.join(str(x) for x in re.findall('[0-9]+', str(handleVariables[0].split(" ")[1]))))
@@ -152,12 +196,12 @@ def getTVApplicationWithoutEdgesRegion(APPLICATION_POSITION):
     regionTVApplicationFullScreenshot=(edgeTVAppX,edgeTVAppY,edgeTVAPPWIDTH,edgeTVAPPHEIGHT)
     return regionTVApplicationFullScreenshot,edgeTVAPPWIDTH,edgeTVAPPHEIGHT
 
-def getLogos(cv):
-    #searchingForLogo
-    PICTURE_TV_LOGO_UPPER = cv.imread("locators\pro7.png",cv.IMREAD_GRAYSCALE)
-    #PICTURE_TV_LOGO_LOWER = cv.imread("locators\pro7_small.png",cv.IMREAD_GRAYSCALE)
-    PICTURE_TV_LOGO_NEWSTIME = cv.imread("locators\pro7_newstime.png",cv.IMREAD_GRAYSCALE)
-    PICTURE_TV_LOGO_WIDER = cv.imread("locators\pro7_gezerrt.png",cv.IMREAD_GRAYSCALE)
-    PICTURE_TV_LOGO_LOWER = PICTURE_TV_LOGO_UPPER
-    PICTURE_TV_LOGO_LEFTER = PICTURE_TV_LOGO_UPPER
-    return [PICTURE_TV_LOGO_UPPER,PICTURE_TV_LOGO_LOWER,PICTURE_TV_LOGO_NEWSTIME,PICTURE_TV_LOGO_WIDER,PICTURE_TV_LOGO_LEFTER]
+def detectBlackBorder(fullApplicationScreenshotAsNumpyArray):
+    countBlackRows=0
+    for i in fullApplicationScreenshotAsNumpyArray:
+        if i.min()>=13 and i.max()<=22:
+            countBlackRows+=1
+        else:
+            break
+    return countBlackRows
+            
