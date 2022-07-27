@@ -56,18 +56,17 @@ def returnJoinedDataFrame(path):
 def removeOutliers(specificDataFrame):
     print("Outliers werden entfernt")
     print("Länge der Daten: "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"].replace(to_replace="Programm Grenze",value ="Programm",inplace=True)
+    specificDataFrame["LABEL"] = specificDataFrame["LABEL"].str.replace("Programm","Programm Grenze")
     print("Programm Grenze in Programm verwandelt "+str(len(specificDataFrame)))
-    specificDataFrame["LABEL"].replace(to_replace ="Werbung Grenze",value ="Werbung",inplace=True)
+    specificDataFrame["LABEL"] = specificDataFrame["LABEL"].str.replace("Werbung Grenze","Werbung")
     print("Werbung Grenze in Werbung verwandelt "+str(len(specificDataFrame)))
     specificDataFrame.dropna(subset=['SIFT RATIO'])
     print("Leere Values in SIFT Ratio entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame.drop(specificDataFrame[specificDataFrame['SIFT RATIO'] == 0.0037703].index)
+    specificDataFrame = specificDataFrame[specificDataFrame['SIFT RATIO'] != 0.0037703]
     print("Error Values in SIFT Ratio Entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL SUM'] == 0.0037703].index)
     specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'] != 0.0037703]
     print("Error Values in MVL Sum Entfernt: "+str(len(specificDataFrame))) 
-    specificDataFrame.drop(specificDataFrame[specificDataFrame['MVL ABS'] == 0.0037703].index)
+    specificDataFrame = specificDataFrame[specificDataFrame['MVL ABS'] != 0.0037703]
     print("Error Values in MVL ABS Entfernt: "+str(len(specificDataFrame))) 
     #remove error values!
     specificDataFrame = specificDataFrame[specificDataFrame['MVL SUM'].between(MVL_SUM[0],MVL_SUM[1])] 
@@ -356,17 +355,17 @@ dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
 
-# ## PRINT SUM Histograms ##
-createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
+# # ## PRINT SUM Histograms ##
+# createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
-## CREATE BOXPLOTS ##
-createBoxplots(columnArray,[dfProgramm,dfWerbung])
+# ## CREATE BOXPLOTS ##
+# createBoxplots(columnArray,[dfProgramm,dfWerbung])
 
-# ## CREATE HEATMAPS ##
-createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
+# # ## CREATE HEATMAPS ##
+# createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 
-for x in columnArray:
-    createScatters(dfProgramm,dfWerbung,x,columnArray)
+# for x in columnArray:
+#     createScatters(dfProgramm,dfWerbung,x,columnArray)
 
 # dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
 # dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
