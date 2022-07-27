@@ -329,7 +329,7 @@ def createBoxplots(columnArray,dataFrames):
                             # print(capbottom)
                             # print(captop)
                             # print(x)
-                            ax.text(capbottom, ylabel-yoff*1.5,'uW'+str(round(capbottom,4)), va='center',ha="center")
+                            ax.text(capbottom, ylabel-yoff*1.5,'uW:'+str(round(capbottom,4)), va='center',ha="center")
                             ax.text(captop, ylabel-yoff*1.5,'oW:{:6.4g}'.format(captop), va='center',ha="center")
                 plt.rc('font', size=10) 
 
@@ -367,17 +367,17 @@ dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 ## CREATE BOXPLOTS ##
 createBoxplots(columnArray,[dfProgramm,dfWerbung])
 
-# ## CREATE HEATMAPS ##
-# createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
+## CREATE HEATMAPS ##
+createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 
-# # ## PRINT SUM Histograms ##
-# createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
+# ## PRINT SUM Histograms ##
+createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
-# for x in columnArray:
-#     createScatters(dfProgramm,dfWerbung,x,columnArray)
+for x in columnArray:
+    createScatters(dfProgramm,dfWerbung,x,columnArray)
 
-# dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
-# dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
+dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
+dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
 
 
 
