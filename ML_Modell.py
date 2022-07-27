@@ -63,7 +63,7 @@ for method in METHODS:
     accuracy = str((countPositive/sum)*100)+"%"
     print("____________________________________")
     print("METHOD: "+method+" COUNTPOSITIVE: "+str(countPositive)+" COUNTNEGATIVE: "+str(countNegative)+" SUM: "+str(sum)+" ACCURACY: "+accuracy)
-    new_row = pd.DataFrame({'Method':[method], 'Positive':[countPositive], 'Negative':[countNegative], 'Sum':[sum],'Accuracy':[accuracy]}) 
+    new_row = pd.DataFrame({'Method':[method], 'Postive':[countPositive], 'Negative':[countNegative], 'Sum':[sum],'Accuracy':[accuracy]}) 
     EVALUATION_DATAFRAME = pd.concat([EVALUATION_DATAFRAME, new_row])
     print("____________________________________")
 #sys.stdout.close()
