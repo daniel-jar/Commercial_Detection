@@ -34,12 +34,12 @@ RMS = [0, 0.2]
 SIFT = [0, 1]
 ECR = [0.001, 0.999]
 
-#Without Outliers
-MVL_SUM = [-99000, 99000]
-MVL_ABS = [-155000,155000]
-RMS = [0, 1000]
-SIFT = [0, 1000]
-ECR = [0.001, 0.999]
+# #Without Outliers
+# MVL_SUM = [-99000, 99000]
+# MVL_ABS = [-155000,155000]
+# RMS = [0, 1000]
+# SIFT = [0, 1000]
+# ECR = [0.001, 0.999]
 
 def returnJoinedDataFrame(path):
     #join data paths
@@ -346,8 +346,7 @@ def createBoxplots(columnArray,dataFrames):
 
 ## GET DATA FRAMES ##
 df = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED)
-## Convert Time Column ##
-df["Zeit"]=df["Zeit"].astype("datetime64[ns]")
+
 ## Columns for Learning Modell ##
 columnArray=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
 specificDataFrame = df[columnArray]
@@ -356,6 +355,9 @@ specificDataFrame = df[columnArray]
 specificDataFrame = removeOutliers(specificDataFrame)
 specificDataFrame.describe().to_csv(OUTPUT_PATH+"formatierteDescription.csv")
 specificDataFrame.to_csv(OUTPUT_PATH+"zusammenGeführte.csv")
+
+## Convert Time Column ##
+specificDataFrame["Zeit"]=specificDataFrame["Zeit"].astype("datetime64[ns]")
 
 ## SPLIT INTO Programm and WERBUNG Frames ##
 dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
