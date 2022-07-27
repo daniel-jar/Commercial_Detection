@@ -34,12 +34,12 @@ RMS = [0, 0.2]
 SIFT = [0, 1]
 ECR = [0.001, 0.999]
 
-# Without Outliers
-# MVL_SUM = [-99000, 99000]
-# MVL_ABS = [-155000,155000]
-# RMS = [0, 1000]
-# SIFT = [0, 1000]
-# ECR = [0.001, 0.999]
+#Without Outliers
+MVL_SUM = [-99000, 99000]
+MVL_ABS = [-155000,155000]
+RMS = [0, 1000]
+SIFT = [0, 1000]
+ECR = [0.001, 0.999]
 
 def returnJoinedDataFrame(path):
     #join data paths
@@ -253,7 +253,8 @@ def createBoxplots(columnArray,dataFrames):
                 my_dict = {'Werbung': dataFrames[1][x],'Programm': dataFrames[0][x]}
                 red_square = dict(marker="|",mew=0.5,markersize=10,alpha=.1)
                 box_dict=ax.boxplot(my_dict.values(),vert=False,labels=("Werbung","Programm"),medianprops=medianprops,showcaps=True,notch=True,flierprops=red_square)
-                ax.set(title=x)
+                #ax.set(title=x)
+                ax.set_xlabel(x)
                 [ax.axhline(y=i, linestyle='--') for i in [1.5]]
                 c = COLOR_FOR_WERBUNG
                 colors = [COLOR_FOR_WERBUNG,COLOR_FOR_PROGRAMM]
@@ -321,7 +322,8 @@ def createBoxplots(columnArray,dataFrames):
                 countPlot = ax.barh([2,1],certainCounts[0],color=[COLOR_FOR_PROGRAMM, COLOR_FOR_WERBUNG])
                 setTextAbovePlotBarh(countPlot,[certainCounts[0][0],certainCounts[0][1]])
                 setTextinPlotBarh(countPlot,[certainCounts[1][0],certainCounts[1][1]])
-                ax.set(title="Anzahl der Datenpunkte")
+                #ax.set(title="Anzahl der Datenpunkte")
+                ax.set_xlabel("Anzahl der Datenpunkte")
 
     manager=plt.get_current_fig_manager()
     manager.full_screen_toggle()
