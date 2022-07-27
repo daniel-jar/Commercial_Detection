@@ -270,6 +270,7 @@ def createBoxplots(columnArray,dataFrames):
                 red_square = dict(marker="|",mew=0.5,markersize=10,alpha=.1)
                 box_dict=ax.boxplot(my_dict.values(),vert=False,labels=("Werbung","Programm"),medianprops=medianprops,showcaps=True,notch=True,flierprops=red_square)
                 ax.set(title=x)
+                [ax.axhline(y=i, linestyle='--') for i in [1.5]]
                 c = COLOR_FOR_WERBUNG
                 colors = [COLOR_FOR_WERBUNG,COLOR_FOR_PROGRAMM]
                 #newAx[0] = plt.boxplot(dataFrames[0][x], notch=True, patch_artist=False)
@@ -298,22 +299,38 @@ def createBoxplots(columnArray,dataFrames):
                         if item=="boxes":
                             pc25 = sub_item.get_xdata().min()
                             pc75 = sub_item.get_xdata().max()
-                            ax.text(pc25, ylabel+yoff*0.8,'Q1:{:6.3g}'.format(pc25), va='center')
-                            ax.text(pc75, ylabel+yoff*0.8,'Q3:{:6.3g}'.format(pc75), va='center')        
+                            # sizeOfBox=abs(pc75-pc25)
+                            # sizeOfXAxis=[abs(number) for number in ax.get_xlim()]
+                            # sizeOfAxis=sum(sizeOfXAxis)
+                            # ratioForOffset = sizeOfBox/sizeOfAxis
+                            # sizeOfOffset=(1-ratioForOffset)*sizeOfBox
+                            # print(sizeOfAxis)
+                            # print(sizeOfOffset)
+                            ax.text(pc25, ylabel+yoff*0.8,'Q1:{:6.4g}'.format(pc25), va='center', ha='center')
+                            ax.text(pc75, ylabel+yoff*0.8,'Q3:{:6.4g}'.format(pc75), va='center')        
                         if item == "medians":
                             median = sub_item.get_xdata()[1]
-                            ax.text(median, ylabel+yoff*4,u'\u03bc:{:6.3g}'.format(median), va='center')
-                            ax.text(median, ylabel-yoff*4,'σ:{:6.3g}'.format(dataFrames[marklabelCounter][x].std()), va='center')
+                            ax.text(median, ylabel+yoff*4.5,u'\u03bc:{:6.4g}'.format(median), va='center',ha='center')
+                            ax.text(median, ylabel-yoff*5.5,'σ:{:6.4g}'.format(dataFrames[marklabelCounter][x].std()), va='center',ha='center')
                             
-
+                
                 for item in ['whiskers', 'caps']:
+                    counter=-2
                     for sub_items,color in zip(zip(box_dict[item][::2],box_dict[item][1::2]),colors):
+                        counter+=2
                         plt.setp(sub_items, color=color)
-                        if item == "caps":
-                            capbottom = sub_item.get_xdata()[0]
-                            captop = sub_item .get_xdata()[0]
-                            ax.text(-10, ylabel-30,'m:{:6.3g}'.format(capbottom), va='center')
-                            ax.text(-10, ylabel-30,'M:{:6.3g}'.format(captop), va='center')
+                        if item == "whiskers":
+                            capbottom = box_dict["whiskers"][counter].get_xdata()[1]
+                            captop = box_dict["whiskers"][counter+1].get_xdata()[1]
+                            ypos = box_dict["whiskers"][counter].get_ydata()
+                            yoff = (ypos[1] - ypos[0])
+                            yoff=0.15
+                            ylabel = ypos[1]
+                            # print(capbottom)
+                            # print(captop)
+                            # print(x)
+                            ax.text(capbottom, ylabel-yoff*1.5,'uW'+str(round(capbottom,4)), va='center',ha="center")
+                            ax.text(captop, ylabel-yoff*1.5,'oW:{:6.4g}'.format(captop), va='center',ha="center")
                 plt.rc('font', size=10) 
 
     manager=plt.get_current_fig_manager()
@@ -350,14 +367,14 @@ dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 ## CREATE BOXPLOTS ##
 createBoxplots(columnArray,[dfProgramm,dfWerbung])
 
-## CREATE HEATMAPS ##
-createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
+# ## CREATE HEATMAPS ##
+# createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 
-# ## PRINT SUM Histograms ##
-createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
+# # ## PRINT SUM Histograms ##
+# createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 
-for x in columnArray:
-    createScatters(dfProgramm,dfWerbung,x,columnArray)
+# for x in columnArray:
+#     createScatters(dfProgramm,dfWerbung,x,columnArray)
 
 # dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
 # dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
