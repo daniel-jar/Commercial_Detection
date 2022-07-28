@@ -212,6 +212,10 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
 
         #check if we switch Status
         TempCurrentState = LOGO_GEFUNDEN
+
+        #predict model?
+
+        print("Derzeitiger Status - Model Status")
         #Switching to Programm gefunden
         if (CONSECUTIVE_FRAME_COOLDOWN_COUNTER==0):
             if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
