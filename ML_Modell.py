@@ -25,16 +25,13 @@ shutil.copyfile(SOURCE_FILE, DEST_FILE)
 
 df = pd.read_csv(DEST_FILE)
 df.drop(columns=df.columns[0], axis=1, inplace=True)
-newFrame=df.replace({':': ''}, regex=True).copy()
-df=newFrame
-df["Zeit"]=df["Zeit"].astype("int64")
+#newFrame=df.replace({':': ''}, regex=True).copy()
+#df=newFrame
+#df["Zeit"]=df["Zeit"].astype("int64")
 
 
 dfCross_Validation = pd.read_csv(CROSS_VALIDATION_FILE)
 dfCross_Validation.drop(columns=dfCross_Validation.columns[0], axis=1, inplace=True)
-newFrame=dfCross_Validation.replace({':': ''}, regex=True).copy()
-dfCross_Validation=newFrame
-dfCross_Validation["Zeit"]=dfCross_Validation["Zeit"].astype("int64")
 COLUMN_ARRAY=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
 dfCross_Validation = dfCross_Validation[COLUMN_ARRAY]
 
@@ -42,6 +39,12 @@ print(len(df))
 print(len(dfCross_Validation))
 for method in METHODS:
     if method=="Regression":
+        newFrame=df.replace({':': ''}, regex=True).copy()
+        df=newFrame
+        df["Zeit"]=df["Zeit"].astype("int64")
+        newFrame=dfCross_Validation.replace({':': ''}, regex=True).copy()
+        dfCross_Validation=newFrame
+        dfCross_Validation["Zeit"]=dfCross_Validation["Zeit"].astype("int64")
         newFrame=df.replace({'Programm': 1}, regex=True).copy()
         df=newFrame
         newFrame=df.replace({'Werbung': 0}, regex=True).copy()
