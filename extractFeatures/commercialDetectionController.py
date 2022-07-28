@@ -24,6 +24,7 @@ import calculateSIFT as SR
 import currentDate as cd
 import calculateRMS_ZCR_MFCC as AudioFeatures
 import detectTvLogo as LogoConfidence
+from chefboost import Chefboost as chef
 
 #extract MFCC, RMS, ZCR
 #https://stackoverflow.com/questions/70502339/how-would-i-find-the-current-decibel-level-and-set-it-as-a-variable/70514219#70514219
@@ -88,6 +89,13 @@ os.makedirs(DATASET_DIR)
 os.makedirs(SCREENSHOT_DIR)
 LOGO_COLLECTION = LogoConfidence.getLogos(cv)
 CONFIDENCES = LogoConfidence.getConfindences()
+
+#load model
+model = chef.load_model("C4.5trained_model.pkl")
+countPositive=0
+countNegative=0
+sum=0
+accuracy=0
 
 #####Starting Code#####
 
@@ -213,9 +221,23 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         #check if we switch Status
         TempCurrentState = LOGO_GEFUNDEN
 
-        #predict model?
+        #predict model?^
 
-        print("Derzeitiger Status - Model Status")
+        prediction_row = [ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time()]
+        model = chef.load_model("C4.5trained_model.pkl")
+        prediction = chef.predict(model, prediction_row)
+        print("Derzeitiger Status: +"+STATE+" Model Status: "+prediction)
+        if (STATE==prediction):
+            countPositive+=1
+        else:
+            countNegative+=1
+        
+        sum+=1
+        if sum%10 == 0:
+            accuracy=str(countPositive/sum*100)+"%"
+            print("currentAccuracy: "+accuracy)
+            print("Current Sum:"+str(sum)+" Positives: "+str(countPositive)+" Negative "+str(countNegative))
+
         #Switching to Programm gefunden
         if (CONSECUTIVE_FRAME_COOLDOWN_COUNTER==0):
             if logoIndicationBooleanSQDIFF and logoIndicationBooleanCCOEFF and LOGO_GEFUNDEN==0:
