@@ -9,7 +9,7 @@ import sys
 
 SOURCE_FILE = "analysis/output/zusammenGeführte.csv"
 DEST_FILE = "machineLearning/learningDataset/learningDataset.csv"
-CROSS_VALIDATION_FILE = "machineLearning/datensatzKreuzvalidierung/logoDetection.csv"
+CROSS_VALIDATION_FILE = "machineLearning/datensatzKreuzvalidierung/datensatzKreuzvalidierung.csv"
 
 EVALUATION_DATAFRAME = pd.DataFrame(columns=["Method",'Postive',"Negative","Sum","Accuracy"])
 
