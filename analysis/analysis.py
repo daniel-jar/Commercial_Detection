@@ -52,17 +52,22 @@ SIFT = [0, 1]
 ECR = [0.001, 0.999]
 ZCR = [0,400]
 
-def returnJoinedDataFrame(path):
+def returnJoinedDataFrame(path,columnArray):
     #join data paths
     # setting the path for joining multiple files
+    frames=[]
     files = os.path.join(path, "*.csv")
     # list of merged files returned
     files = glob.glob(files)
     print("Result CSV after joining all CSV files at a particular location...");
     # joining files with concat and read_csv
-    df = pd.concat(map(pd.read_csv, files), ignore_index=True)
+    masterDf = pd.DataFrame(columns=columnArray)
+    for file in files:
+        dfNew = pd.read_csv(file)
+        specificDataFrameToJoin = dfNew[columnArray]
+        frames.append(specificDataFrameToJoin)
     #print(df)
-    return df
+    return pd.concat(frames)
 
 def removeOutliers(specificDataFrame):
     print("Outliers werden entfernt")
@@ -358,11 +363,11 @@ def createBoxplots(columnArray,dataFrames):
     #plt.show()
 
 ## GET DATA FRAMES ##
-df = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED)
+columnArray=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
+specificDataFrame = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED,columnArray)
 
 ## Columns for Learning Modell ##
-columnArray=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
-specificDataFrame = df[columnArray]
+#specificDataFrame = df[columnArray]
 
 ## REMOVE OUTLIERS AND FALSE NUMBERS ## 
 specificDataFrame = removeOutliers(specificDataFrame)
