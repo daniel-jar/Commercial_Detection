@@ -35,20 +35,49 @@ dfCross_Validation.drop(columns=dfCross_Validation.columns[0], axis=1, inplace=T
 COLUMN_ARRAY=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
 dfCross_Validation = dfCross_Validation[COLUMN_ARRAY]
 
+
+dfCross_ValidationRegression = dfCross_Validation
+dfRegression = df
+
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].astype("string")
+df["Tag"]=df["Tag"].astype("string")
+
+df["Tag"]=df["Tag"].replace("0", "'Montag'", regex=True)
+df["Tag"]=df["Tag"].replace("1", "'Dienstag'", regex=True)
+df["Tag"]=df["Tag"].replace("2", "'Mittwoch'", regex=True)
+df["Tag"]=df["Tag"].replace("3", "'Donnerstag'", regex=True)
+df["Tag"]=df["Tag"].replace("4", "'Freitag'", regex=True)
+df["Tag"]=df["Tag"].replace("5", "'Samstag'", regex=True)
+df["Tag"]=df["Tag"].replace("6", "'Sonntag'", regex=True)
+
+print(df["Tag"].unique())
+
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].replace("0", "'Montag'", regex=True)
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].replace("1", "'Dienstag'", regex=True)
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].replace("2", "'Mittwoch'", regex=True)
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].replace("3", "'Donnerstag'", regex=True)
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].replace("4", "'Freitag'", regex=True)
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].replace("5", "'Samstag'", regex=True)
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].replace("6", "'Sonntag'", regex=True)
+
+dfCross_Validation["Tag"]=dfCross_Validation["Tag"].astype("string")
+df["Tag"]=df["Tag"].astype("string")
+
 print(len(df))
 print(len(dfCross_Validation))
 for method in METHODS:
     if method=="Regression":
-        newFrame=df.replace({':': ''}, regex=True).copy()
-        df=newFrame
-        df["Zeit"]=df["Zeit"].astype("int64")
-        newFrame=dfCross_Validation.replace({':': ''}, regex=True).copy()
-        dfCross_Validation=newFrame
-        dfCross_Validation["Zeit"]=dfCross_Validation["Zeit"].astype("int64")
-        newFrame=df.replace({'Programm': 1}, regex=True).copy()
-        df=newFrame
-        newFrame=df.replace({'Werbung': 0}, regex=True).copy()
-        df=newFrame
+        newFrame=dfRegression.replace({':': ''}, regex=True).copy()
+        dfRegression=newFrame
+        dfRegression["Zeit"]=dfRegression["Zeit"].astype("int64")
+        newFrame=dfCross_ValidationRegression.replace({':': ''}, regex=True).copy()
+        dfCross_ValidationRegression=newFrame
+        newFrame=dfRegression.replace({'Programm': 1}, regex=True).copy()
+        dfRegression=newFrame
+        newFrame=dfRegression.replace({'Werbung': 0}, regex=True).copy()
+        dfRegression=newFrame
+        df=dfRegression
+        dfCross_Validation=dfCross_ValidationRegression
     config = {'algorithm': method,'enableParallelism': False}
     model = chef.fit(df, config = config, target_label = 'LABEL')
     chef.save_model(model, method+"trained_model.pkl")
