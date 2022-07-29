@@ -1,0 +1,69 @@
+1129570
+8189
+C4.5  tree is going to be built...
+-------------------------
+finished in  2485.2424240112305  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  89.68819993448834 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[885818, 86061], [30418, 127273]]
+Precision:  91.1449 %, Recall:  96.6801 %, F1:  93.8309 %
+____________________________________
+METHOD: C4.5 COUNTPOSITIVE: 7421 COUNTNEGATIVE: 768 SUM: 8189 ACCURACY: 90.62156551471486%
+____________________________________
+ID3  tree is going to be built...
+-------------------------
+finished in  25592.259948968887  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  95.85204989509282 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[901637, 32255], [14599, 181079]]
+Precision:  96.5462 %, Recall:  98.4066 %, F1:  97.4675 %
+____________________________________
+METHOD: ID3 COUNTPOSITIVE: 7494 COUNTNEGATIVE: 695 SUM: 8189 ACCURACY: 91.51300525094639%
+____________________________________
+CART  tree is going to be built...
+-------------------------
+finished in  30176.644315958023  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  96.3597652203936 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[904610, 29493], [11626, 183841]]
+Precision:  96.8426 %, Recall:  98.7311 %, F1:  97.7777 %
+____________________________________
+METHOD: CART COUNTPOSITIVE: 7432 COUNTNEGATIVE: 757 SUM: 8189 ACCURACY: 90.75589205031139%
+____________________________________
+CHAID  tree is going to be built...
+-------------------------
+finished in  34328.7660074234  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  94.46143222642245 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[900065, 46391], [16171, 166943]]
+Precision:  95.0985 %, Recall:  98.2351 %, F1:  96.6414 %
+____________________________________
+METHOD: CHAID COUNTPOSITIVE: 7441 COUNTNEGATIVE: 748 SUM: 8189 ACCURACY: 90.86579557943583%
+____________________________________
+Regression  tree is going to be built...
+finished in  210.71310257911682  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+MAE:  0.1805030527840978
+MSE:  0.18049648686373285
+RMSE:  0.4248487811724695
+RAE:  0.4717232430069938
+RRSE:  1.0854599702678502
+Mean:  0.8111369813291783
+MAE / Mean:  22.253091270516915 %
+RMSE / Mean:  52.37694630520809 %
+____________________________________
+METHOD: Regression COUNTPOSITIVE: 6572 COUNTNEGATIVE: 1617 SUM: 8189 ACCURACY: 80.25399926730981%
