@@ -91,7 +91,8 @@ LOGO_COLLECTION = LogoConfidence.getLogos(cv)
 CONFIDENCES = LogoConfidence.getConfindences()
 
 #load model
-model = chef.load_model("C4.5trained_model.pkl")
+modelname="ID3trained_model.pkl"
+model = chef.load_model(modelname)
 countPositive=0
 countNegative=0
 sum=0
@@ -224,10 +225,9 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         #predict model?^
 
         prediction_row = [ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time()]
-        model = chef.load_model("C4.5trained_model.pkl")
         prediction = chef.predict(model, prediction_row)
-        print("Derzeitiger Status: +"+STATE+" Model Status: "+prediction)
-        if (STATE==prediction):
+        print("Derzeitiger Status: "+STATE+" Model Status: "+prediction)
+        if (STATE==prediction or (prediction=="Werbung" and STATE=="Wahrscheinlich Werbung")):
             countPositive+=1
         else:
             countNegative+=1
