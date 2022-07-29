@@ -1,0 +1,94 @@
+PS C:\Users\Daniel\Documents\GitHub\masterthesispython> conda activate base
+PS C:\Users\Daniel\Documents\GitHub\masterthesispython> & C:/Users/Daniel/miniconda3/python.exe c:/Users/Daniel/Documents/GitHub/masterthesispython/ML_Modell.py
+1129570
+8189
+C4.5  tree is going to be built...
+-------------------------
+finished in  233.44751071929932  seconds
+-------------------------
+-------------------------
+Accuracy:  81.13768956328515 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[915458, 212285], [778, 1049]]
+Precision:  81.1761 %, Recall:  99.9151 %, F1:  89.5761 %
+Traceback (most recent call last):
+  File "c:\Users\Daniel\Documents\GitHub\masterthesispython\ML_Modell.py", line 52, in <module>
+    shutil.copytree(SOURCE_MODEL, DESTINATION_MODEL+method)
+  File "C:\Users\Daniel\miniconda3\lib\shutil.py", line 565, in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+  File "C:\Users\Daniel\miniconda3\lib\shutil.py", line 466, in _copytree
+    os.makedirs(dst, exist_ok=dirs_exist_ok)
+  File "C:\Users\Daniel\miniconda3\lib\os.py", line 225, in makedirs
+    mkdir(name, mode)
+FileExistsError: [WinError 183] Eine Datei kann nicht erstellt werden, wenn sie bereits vorhanden ist: 'machineLearning/trainedModels/C4.5'
+PS C:\Users\Daniel\Documents\GitHub\masterthesispython> & C:/Users/Daniel/miniconda3/python.exe c:/Users/Daniel/Documents/GitHub/masterthesispython/ML_Modell.py
+1129570
+8189
+C4.5  tree is going to be built...
+-------------------------
+finished in  233.19154953956604  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  81.13768956328515 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[915458, 212285], [778, 1049]]
+Precision:  81.1761 %, Recall:  99.9151 %, F1:  89.5761 %
+____________________________________
+METHOD: C4.5 COUNTPOSITIVE: 6554 COUNTNEGATIVE: 1635 SUM: 8189 ACCURACY: 80.03419220906093%
+____________________________________
+ID3  tree is going to be built...
+-------------------------
+finished in  663.4170379638672  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  81.96880228759616 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[904888, 192327], [11348, 21007]]
+Precision:  82.4713 %, Recall:  98.7615 %, F1:  89.8843 %
+____________________________________
+METHOD: ID3 COUNTPOSITIVE: 6520 COUNTNEGATIVE: 1669 SUM: 8189 ACCURACY: 79.61900109903529%
+____________________________________
+CART  tree is going to be built...
+-------------------------
+finished in  593.8604726791382  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  81.96596935116902 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[904844, 192315], [11392, 21019]]
+Precision:  82.4715 %, Recall:  98.7567 %, F1:  89.8824 %
+____________________________________
+METHOD: CART COUNTPOSITIVE: 6510 COUNTNEGATIVE: 1679 SUM: 8189 ACCURACY: 79.4968860666748%
+____________________________________
+CHAID  tree is going to be built...
+-------------------------
+finished in  731.768640756607  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  81.37096417220712 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[911348, 205540], [4888, 7794]]
+Precision:  81.5971 %, Recall:  99.4665 %, F1:  89.65 %
+____________________________________
+METHOD: CHAID COUNTPOSITIVE: 6522 COUNTNEGATIVE: 1667 SUM: 8189 ACCURACY: 79.64342410550739%
+____________________________________
+Regression  tree is going to be built...
+-------------------------
+finished in  273.00014638900757  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+MAE:  0.1805030527840978
+MSE:  0.18049648686373285
+RMSE:  0.4248487811724695
+RAE:  0.4717232430069938
+RRSE:  1.0854599702678502
+Mean:  0.8111369813291783
+MAE / Mean:  22.253091270516915 %
+RMSE / Mean:  52.37694630520809 %
+____________________________________
+METHOD: Regression COUNTPOSITIVE: 6572 COUNTNEGATIVE: 1617 SUM: 8189 ACCURACY: 80.25399926730981%
