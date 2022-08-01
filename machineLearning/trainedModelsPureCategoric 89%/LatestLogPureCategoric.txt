@@ -1,0 +1,81 @@
+<StringArray>
+[  "'Dienstag'",   "'Mittwoch'",    "'Samstag'",     "'Montag'",
+ "'Donnerstag'",    "'Freitag'",    "'Sonntag'"]
+Length: 7, dtype: string
+1129570
+8189
+C4.5  tree is going to be built...
+-------------------------
+finished in  1818.3054461479187  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  80.13465300955231 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[819942, 128099], [96294, 85235]]
+Precision:  86.488 %, Recall:  89.4903 %, F1:  87.9635 %
+____________________________________
+METHOD: C4.5 COUNTPOSITIVE: 7364 COUNTNEGATIVE: 825 SUM: 8189 ACCURACY: 89.92550983026011%
+____________________________________
+ID3  tree is going to be built...
+-------------------------
+finished in  7826.731787919998  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  81.73667855909771 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[813189, 103250], [103047, 110084]]
+Precision:  88.7336 %, Recall:  88.7532 %, F1:  88.7434 %
+____________________________________
+METHOD: ID3 COUNTPOSITIVE: 7358 COUNTNEGATIVE: 831 SUM: 8189 ACCURACY: 89.85224081084382%
+____________________________________
+CART  tree is going to be built...
+-------------------------
+finished in  6708.237825393677  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  81.93046911656648 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[809466, 97338], [106770, 115996]]
+Precision:  89.2658 %, Recall:  88.3469 %, F1:  88.804 %
+____________________________________
+METHOD: CART COUNTPOSITIVE: 7302 COUNTNEGATIVE: 887 SUM: 8189 ACCURACY: 89.16839662962511%
+____________________________________
+CHAID  tree is going to be built...
+-------------------------
+finished in  10681.760338068008  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+Accuracy:  83.92087254441955 % on  1129570  instances
+Labels:  ['Programm' 'Werbung']
+Confusion matrix:  [[841013, 106402], [75223, 106932]]
+Precision:  88.7692 %, Recall:  91.79 %, F1:  90.2543 %
+____________________________________
+METHOD: CHAID COUNTPOSITIVE: 7401 COUNTNEGATIVE: 788 SUM: 8189 ACCURACY: 90.3773354499939%
+____________________________________
+Regression  tree is going to be built...
+-------------------------
+finished in  252.44399523735046  seconds
+-------------------------
+Evaluate  train set
+-------------------------
+MAE:  0.18281639620976717
+MSE:  0.18280590180334114
+RMSE:  0.42755806834082916
+RAE:  0.4747314515412606
+RRSE:  1.0923820161805131
+Mean:  0.8111369813291783
+MAE / Mean:  22.53828889791131 %
+RMSE / Mean:  52.710957357684094 %
+Traceback (most recent call last):
+  File "c:\Users\daniel.jarocha\Documents\GitHub\masterthesispython\ML_Modell.py", line 89, in <module>
+    prediction = chef.predict(model,instance)
+  File "C:\Users\daniel.jarocha\AppData\Local\Programs\Python\Python39\lib\site-packages\chefboost\Chefboost.py", line 336, in predict
+    prediction = tree.findDecision(param)
+  File "c:\Users\daniel.jarocha\Documents\GitHub\masterthesispython\outputs/rules/rules.py", line 3, in findDecision
+    if obj[10]>503.4240287465908:
+TypeError: '>' not supported between instances of 'str' and 'float'
+PS C:\Users\daniel.jarocha\Documents\GitHub\masterthesispython> 
