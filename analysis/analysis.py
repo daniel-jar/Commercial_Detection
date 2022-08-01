@@ -23,7 +23,8 @@ OUTPUT_PATH = "analysis\output\\"
 COLOR_FOR_WERBUNG = "orange"
 COLOR_FOR_PROGRAMM ="cornflowerblue"
 STATUSES=[["Programm",COLOR_FOR_PROGRAMM],["Werbung",COLOR_FOR_WERBUNG]]
-ALPHA_VAL = 0.3
+ALPHA_VAL = 0.1
+MARKER_POINT_SIZE=4
 SIZE_OF_PLOTS = [24,13.5]
 OUTLIER_LIMIT_RMS = [0,200]
 
@@ -51,6 +52,7 @@ RMS = [0, 0.2]
 SIFT = [0, 1]
 ECR = [0.001, 0.999]
 ZCR = [0,400]
+
 
 def returnJoinedDataFrame(path,columnArray):
     #join data paths
@@ -206,7 +208,7 @@ def createHeatmaps(dataframes):
     ##createHeatmap(specificDataFrame.corr())
     fig, axes = plt.subplots(ncols=2, sharey=True, figsize=(SIZE_OF_PLOTS))  
     sns.heatmap(dataframes[0],ax=axes[0],cbar=False,vmax=1, annot=True, linewidths=.5,xticklabels=True, yticklabels=True)
-    sns.heatmap(dataframes[0],ax=axes[1],cbar=True,vmax=1, annot=True, linewidths=.5,xticklabels=True, yticklabels=True)
+    sns.heatmap(dataframes[1],ax=axes[1],cbar=True,vmax=1, annot=True, linewidths=.5,xticklabels=True, yticklabels=True)
     axes[0].set_xticklabels(dataframes[0].columns,rotation=30,horizontalalignment="right")
     axes[1].set_xticklabels(dataframes[1].columns,rotation=30,horizontalalignment="right")
 
@@ -241,11 +243,11 @@ def createScatters(dfWerbung,dfProgramm,columnName1,columnArray):
                 axis.set_xlabel(columnName1)
                 axis.set_ylabel(cArr[counterForPlots])
                 if counterForPlots==0:
-                    axis.scatter(dfWerbung[columnName1],dfWerbung[cArr[counterForPlots]],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=ALPHA_VAL,s=4)
-                    axis.scatter(dfProgramm[columnName1],dfProgramm[cArr[counterForPlots]],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=ALPHA_VAL,s=4)
+                    axis.scatter(dfProgramm[columnName1],dfProgramm[cArr[counterForPlots]],color=COLOR_FOR_PROGRAMM,label="Programm",alpha=ALPHA_VAL,s=MARKER_POINT_SIZE)
+                    axis.scatter(dfWerbung[columnName1],dfWerbung[cArr[counterForPlots]],color=COLOR_FOR_WERBUNG,label="Werbung",alpha=ALPHA_VAL,s=MARKER_POINT_SIZE)
                 else:
-                    axis.scatter(dfWerbung[columnName1],dfWerbung[cArr[counterForPlots]],color=COLOR_FOR_WERBUNG,alpha=ALPHA_VAL,s=4)
-                    axis.scatter(dfProgramm[columnName1],dfProgramm[cArr[counterForPlots]],color=COLOR_FOR_PROGRAMM,alpha=ALPHA_VAL,s=4) 
+                    axis.scatter(dfProgramm[columnName1],dfProgramm[cArr[counterForPlots]],color=COLOR_FOR_PROGRAMM,alpha=ALPHA_VAL,s=MARKER_POINT_SIZE) 
+                    axis.scatter(dfWerbung[columnName1],dfWerbung[cArr[counterForPlots]],color=COLOR_FOR_WERBUNG,alpha=ALPHA_VAL,s=MARKER_POINT_SIZE)
 
             counterForPlots+=1
     manager=plt.get_current_fig_manager()
@@ -365,6 +367,7 @@ def createBoxplots(columnArray,dataFrames):
 ## GET DATA FRAMES ##
 columnArray=["ECR_RATIO","MVL SUM","MVL ABS","RMS","DB","ZCR","MFCC","FARBWECHSEL RATIO","SIFT RATIO","Tag","Zeit","LABEL"]
 specificDataFrame = returnJoinedDataFrame(PATH_DATA_TO_BE_JOINED,columnArray)
+print(len(specificDataFrame))
 
 ## Columns for Learning Modell ##
 #specificDataFrame = df[columnArray]
@@ -381,20 +384,26 @@ specificDataFrame["Zeit"]=specificDataFrame["Zeit"].astype("datetime64[ns]")
 dfWerbung = specificDataFrame[specificDataFrame['LABEL'] == "Werbung"]
 dfProgramm = specificDataFrame[specificDataFrame['LABEL'] == "Programm"]
 
-## CREATE BOXPLOTS ##
+print("Länge Werbung "+str(len(dfWerbung)))
+print("Länge Programm "+str(len(dfProgramm)))
+
+# CREATE BOXPLOTS ##
 createBoxplots(columnArray,[dfProgramm,dfWerbung])
 print("Boxplots Created")
 
-# ## PRINT SUM Histograms ##
+## PRINT SUM Histograms ##
 createSumWerbungProgramHistograms([dfProgramm,dfWerbung],STATUSES,columnArray)
 print("Histograms Created")
 
-# ## CREATE HEATMAPS ##
+## CREATE HEATMAPS ##
 createHeatmaps([dfProgramm.corr(),dfWerbung.corr()])
 print("Heatmaps Created")
 
+# dfWerbung=dfWerbung.head(20000)
+# dfProgramm=dfProgramm.head(20000)
+
 for x in columnArray:
-    createScatters(dfProgramm,dfWerbung,x,columnArray)
+    createScatters(dfWerbung,dfProgramm,x,columnArray)
 print("Scatters Created")
 # dfWerbung.describe().to_csv(OUTPUT_PATH+"WerbungDescribe.csv")
 # dfProgramm.describe().to_csv(OUTPUT_PATH+"ProgrammDescribe.csv")
