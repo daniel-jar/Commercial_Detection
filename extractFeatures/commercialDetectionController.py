@@ -225,18 +225,19 @@ with open(FILEPATH_DATASET, 'a', newline='') as f_object:
         #predict model?^
 
         prediction_row = [ECR_RATIO,MVL_VALUES[0],MVL_VALUES[1],RMS,DB,ZCR,MFCC,FARBWECHSEL_RATIO,SIFT_RATIO,cd.day(),cd.time()]
-        prediction = chef.predict(model, prediction_row)
-        print("Derzeitiger Status: "+STATE+" Model Status: "+prediction)
-        if (STATE==prediction or (prediction=="Werbung" and STATE=="Wahrscheinlich Werbung")):
-            countPositive+=1
-        else:
-            countNegative+=1
-        
-        sum+=1
-        if sum%10 == 0:
-            accuracy=str(countPositive/sum*100)+"%"
-            print("currentAccuracy: "+accuracy)
-            print("Current Sum:"+str(sum)+" Positives: "+str(countPositive)+" Negative "+str(countNegative))
+        if not None in prediction_row:
+            prediction = chef.predict(model, prediction_row)
+            print("Derzeitiger Status: "+STATE+" Model Status: "+prediction)
+            if (STATE==prediction or (prediction=="Werbung" and STATE=="Wahrscheinlich Werbung")):
+                countPositive+=1
+            else:
+                countNegative+=1
+            
+            sum+=1
+            if sum%10 == 0:
+                accuracy=str(countPositive/sum*100)+"%"
+                print("currentAccuracy: "+accuracy)
+                print("Current Sum:"+str(sum)+" Positives: "+str(countPositive)+" Negative "+str(countNegative))
 
         #Switching to Programm gefunden
         if (CONSECUTIVE_FRAME_COOLDOWN_COUNTER==0):
