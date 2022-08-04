@@ -23,26 +23,26 @@ OUTPUT_PATH = "analysis\output\\"
 COLOR_FOR_WERBUNG = "orange"
 COLOR_FOR_PROGRAMM ="cornflowerblue"
 STATUSES=[["Programm",COLOR_FOR_PROGRAMM],["Werbung",COLOR_FOR_WERBUNG]]
-ALPHA_VAL = 0.1
+ALPHA_VAL = 0.01
 MARKER_POINT_SIZE=4
 SIZE_OF_PLOTS = [24,13.5]
-OUTLIER_LIMIT_RMS = [0,200]
 
-#Outliers
-MVL_SUM = [-1000, 1000]
-MVL_ABS = [0,5000]
-RMS = [0, 0.2]
-SIFT = [0, 1]
-ECR = [0.001, 0.999]
-ZCR = [0,400]
 
-#Without Outliers
-MVL_SUM = [-99000, 99000]
-MVL_ABS = [-155000,155000]
-RMS = [0, 1000]
-SIFT = [-1, 55]
-ECR = [-10000.001, 10000.999]
-ZCR = [0,5000]
+# #Outliers
+# MVL_SUM = [-1000, 1000]
+# MVL_ABS = [0,5000]
+# RMS = [0, 0.2]
+# SIFT = [0, 1]
+# ECR = [0.001, 0.999]
+# ZCR = [0,400]
+
+# #Without Outliers
+# MVL_SUM = [-99000, 99000]
+# MVL_ABS = [-155000,155000]
+# RMS = [0, 1000]
+# SIFT = [-1, 55]
+# ECR = [-10000.001, 10000.999]
+# ZCR = [0,5000]
 
 
 #Different Outliers
@@ -52,7 +52,7 @@ RMS = [0, 0.2]
 SIFT = [0, 1]
 ECR = [0.001, 0.999]
 ZCR = [0,400]
-
+OUTLIER_LIMIT_RMS = [0,200]
 
 def returnJoinedDataFrame(path,columnArray):
     #join data paths
