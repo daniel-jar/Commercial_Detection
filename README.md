@@ -1,5 +1,5 @@
-py -m pip install pyautogui	#for locator Tv Logo
-py -m pip install pygetwindow 	#for window Size
+py -m pip install pyautogui	#for locator Tv Logo <br />
+py -m pip install pygetwindow 	#for window Size <br />
 py -m pip install opencv-python #for rectangle of Interest #not used only for img notused
 py -m pip install pyglet #for rectangle of Interest notused
 py -m pip install regex
